@@ -3,23 +3,7 @@ import os
 import pandas as pd
 import json
 
-
-def sentence_cleaner(sentence:str):
-    import re
-    sentence = sentence.replace("\"", "")
-    sentence = sentence.replace("RT", "")
-    sentence = sentence.replace(".", "")
-    sentence = sentence.replace("\'", "")
-    results = re.compile(r'[http|https]*://[a-zA-Z0-9.?/&=:_%,-~]*', re.S)
-    sentence = re.sub(results, '', sentence)
-    sentence = re.sub('[\u4e00-\u9fa5]', '', sentence)
-    # results2 = re.compile(r'[@].*?[ ]', re.S)
-    # sentence = re.sub(results2, '', sentence)
-    sentence = sentence.replace("\n", " ")
-    sentence = sentence.strip()
-    results2 = re.compile(r'[@].*?[ ]', re.S)
-    sentence = re.sub(results2, '', sentence)
-    return sentence
+from utils.utils import sentence_cleaner
 
 
 class DataGen(object):

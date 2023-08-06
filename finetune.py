@@ -7,6 +7,10 @@ import torch
 import transformers
 from datasets import load_dataset
 
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, mean_squared_error
+import numpy as np
+import pandas as pd
+
 """
 Unused imports:
 import torch.nn as nn
@@ -20,9 +24,12 @@ from peft import (
     prepare_model_for_int8_training,
     set_peft_model_state_dict,
 )
-from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import LlamaForCausalLM, LlamaTokenizer, GenerationConfig
 
 from utils.prompter import Prompter
+from utils.utils import result_translator
+
+from tqdm import tqdm
 
 
 def train(
@@ -183,10 +190,12 @@ def train(
     )
     model = get_peft_model(model, config)
 
-    if data_path.endswith(".json") or data_path.endswith(".jsonl"):
-        data = load_dataset("json", data_files=data_path)
-    else:
-        data = load_dataset(data_path)
+    # if data_path.endswith(".json") or data_path.endswith(".jsonl"):
+    train_data = load_dataset("json", data_files=f"{data_path}/train.json")
+    val_data = load_dataset("json", data_files=f"{data_path}/val.json")
+    test_data = load_dataset("json", data_files=f"{data_path}/test.json")
+    # else:
+    #     data = load_dataset(data_path)
 
     if resume_from_checkpoint:
         # Check the available weights and load them
@@ -210,20 +219,23 @@ def train(
 
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
-    print(data, val_set_size)
-    if val_set_size > 0:
-        train_val = data["train"].train_test_split(
-            test_size=val_set_size, shuffle=True, seed=42
-        )
-        train_data = (
-            train_val["train"].shuffle().map(generate_and_tokenize_prompt)
-        )
-        val_data = (
-            train_val["test"].shuffle().map(generate_and_tokenize_prompt)
-        )
-    else:
-        train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
-        val_data = None
+    # if val_set_size > 0:
+    #     train_val = data["train"].train_test_split(
+    #         test_size=val_set_size, shuffle=True, seed=42
+    #     )
+    #     train_data = (
+    #         train_val["train"].shuffle().map(generate_and_tokenize_prompt)
+    #     )
+    #     val_data = (
+    #         train_val["test"].shuffle().map(generate_and_tokenize_prompt)
+    #     )
+    # else:
+    #     train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
+    #     val_data = None
+    
+    train_data = train_data["train"].shuffle().map(generate_and_tokenize_prompt)
+    val_data = val_data["train"].shuffle().map(generate_and_tokenize_prompt)
+    test_data = test_data["train"].shuffle().map(generate_and_tokenize_prompt)
 
     if not ddp and torch.cuda.device_count() > 1:
         # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available
@@ -278,6 +290,93 @@ def train(
     print(
         "\n If there's a warning about missing keys above, please disregard :)"
     )
+
+    '''
+    evaluate
+    '''
+    model.eval()
+
+    def evaluate(
+        self,
+        prompt='',
+        temperature=0.4,
+        top_p=0.65,
+        top_k=35,
+        repetition_penalty=1.1,
+        max_new_tokens=512,
+        **kwargs,
+    ):
+        inputs = tokenizer(prompt, return_tensors="pt")
+        input_ids = inputs["input_ids"].to("cuda:0")
+        generation_config = GenerationConfig(
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            repetition_penalty=repetition_penalty,
+            **kwargs,
+        )
+        generate_params = {
+            "input_ids": input_ids,
+            "generation_config": generation_config,
+            "return_dict_in_generate": True,
+            "output_scores": True,
+            "max_new_tokens": max_new_tokens,
+        }
+
+        with torch.no_grad():
+            generation_output = model.generate(
+                input_ids=input_ids,
+                generation_config=generation_config,
+                return_dict_in_generate=True,
+                output_scores=True,
+                max_new_tokens=max_new_tokens,
+            )
+        s = generation_output.sequences[0]
+        output = tokenizer.decode(s)
+        # return output.split("### Response:")[-1].strip()
+        return prompter.get_response(output)
+
+    def eval(self, test_data):
+        prediction = np.array([])
+        true = np.array([])
+        print('evaluate begin...')
+        for idx, single_test in tqdm(enumerate(test_data)):
+            single_prompt = prompter.generate_prompt(single_test["instruction"], single_test["input"])
+            result = self.evaluate(single_prompt)
+            output = result_translator(self.topic, result, self.translator)
+            prediction = np.append(prediction, output)
+            label = result_translator(self.topic, single_test["output"], self.translator)
+            true = np.append(true, label)
+
+        acc = accuracy_score(true, prediction)
+        data = pd.DataFrame(data={'predict': prediction, 'true': true})
+        irrelevant_eval = data.replace({2: 1, 1: 1, 0: 1, -1: 1, -2: 1, -9: 0})
+        relevant_data = data.drop(data[(data['true'] == -9) | (data['predict'] == -9)].index)
+
+        relevant_acc = accuracy_score(irrelevant_eval.true.values, irrelevant_eval.predict.values)
+        precision, recall, f1, _ = precision_recall_fscore_support(irrelevant_eval.true.values, irrelevant_eval.predict.values, average='binary')
+
+        rmse = mean_squared_error(relevant_data.true.values, relevant_data.predict.values, squared=False)
+        error_analysis = {}
+        for index, row in relevant_data.iterrows():
+            preds_set = error_analysis.get(row['true'], np.array(0))
+            preds_set = np.append(preds_set, row['predict'])
+            error_analysis[row['true']] = preds_set
+
+        print(f'total acc: {acc}\n')
+        print(f'ir/relevant: acc-{relevant_acc}, precision-{precision}, recall-{recall}, f1-{f1}\n')
+        print(f'rmse: {rmse}\n')
+        print('error_analysis: \n')
+
+        for k, s in error_analysis.items():
+            true = np.ones(s.shape)*k
+            rmse = mean_squared_error(true, s, squared=False)
+
+            print(f'{str(k)}:    {str(rmse)}')
+
+        return acc, rmse, error_analysis
+    
+    eval(test_data)
 
 
 if __name__ == "__main__":
