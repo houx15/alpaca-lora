@@ -1,0 +1,6 @@
+{
+    "guanaco": "JosephusCheung/Guanaco",
+    "alpaca": "chainyo/alpaca-lora-7b",
+    "alpaca-13b": "TheBloke/gpt4-alpaca-lora-13B-HF",
+    "falcon": "tiiuae/falcon-7b-instruct"
+}

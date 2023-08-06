@@ -1,0 +1,66 @@
+{
+    "gun": {
+        "labels": {
+            "strongly support gun rights": -2,
+            "slightly support gun rights": -1,
+            "neutral to gun rights/control": 0,
+            "slightly support strict gun control": 1,
+            "strongly support strict gun control": 2,
+            "irrelevant or no opinion on gun rights/control": -9
+        },
+        "splitters": ["control", "rights"]
+    },
+    "abortion": {
+        "labels": {
+            "strongly believe abortion should be illegal": -2,
+            "slightly believe abortion should be illegal": -1,
+            "neutral to abortion rights/restrictions": 0,
+            "slightly believe abortion should be legal": 1,
+            "strongly believe abortion should be legal": 2,
+            "irrelevant or no opinion on abortion": -9
+        },
+        "splitters": ["legal", "illegal", "restrictions"]
+    },
+    "china": {
+        "labels": {
+            "-2": -2,
+            "-1": -1,
+            "0": 0,
+            "1": 1,
+            "2": 2
+        },
+        "splitters": []
+    },
+    "climate": {
+        "labels": {
+            "strongly disagree with climate change": -2,
+            "slightly disagree with climate change": -1,
+            "neutral to climate change": 0,
+            "slightly agree with climate change": 1,
+            "strongly agree with climate change": 2,
+            "irrelevant or no opinion on climate change": -9
+        },
+        "splitters": ["change"]
+    },
+    "drug": {
+        "labels": {
+            "strongly support prohibition": -2,
+            "slightly support prohibition": -1,
+            "neutral to drug legalization (decriminalized but not encouraged)": 0,
+            "slightly support legalization": 1,
+            "strongly support legalization": 2,
+            "irrelevant or no opinion on drug legalization": -9
+        },
+        "splitters": ["legalization", "prohibition"]
+    },
+    "sexual": {
+        "labels": {
+            "irrelevant or no opinion on lgbt+ rights/issues": -9,
+            "strongly conservative on lgbt+ issues": 2,
+            "slightly conservative on lgbt+ issues": 1,
+            "neutral to lgbt+ rights/issues": 0,
+            "slightly support lgbt+ rights": -1,
+            "strongly support lgbt+ rights": -2
+        }
+    }
+}
