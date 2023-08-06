@@ -11,6 +11,8 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support, mea
 import numpy as np
 import pandas as pd
 
+import json
+
 """
 Unused imports:
 import torch.nn as nn
@@ -34,6 +36,7 @@ from tqdm import tqdm
 
 def train(
     # model/data params
+    topic: str,
     base_model: str = "",  # the only required argument
     data_path: str = "yahma/alpaca-cleaned",
     output_dir: str = "./lora-alpaca",
@@ -296,8 +299,11 @@ def train(
     '''
     model.eval()
 
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/label_map.json'), 'r', encoding='utf8') as rfile:
+        translator_dict = json.loads(rfile.read())
+        translator = translator_dict[topic]
+
     def evaluate(
-        self,
         prompt='',
         temperature=0.4,
         top_p=0.65,
@@ -336,16 +342,16 @@ def train(
         # return output.split("### Response:")[-1].strip()
         return prompter.get_response(output)
 
-    def eval(self, test_data):
+    def eval(test_data):
         prediction = np.array([])
         true = np.array([])
         print('evaluate begin...')
         for idx, single_test in tqdm(enumerate(test_data)):
             single_prompt = prompter.generate_prompt(single_test["instruction"], single_test["input"])
-            result = self.evaluate(single_prompt)
-            output = result_translator(self.topic, result, self.translator)
+            result = evaluate(single_prompt)
+            output = result_translator(topic, result, translator)
             prediction = np.append(prediction, output)
-            label = result_translator(self.topic, single_test["output"], self.translator)
+            label = result_translator(topic, single_test["output"], translator)
             true = np.append(true, label)
 
         acc = accuracy_score(true, prediction)
