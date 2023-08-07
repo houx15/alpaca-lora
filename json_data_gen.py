@@ -13,18 +13,18 @@ class DataGen(object):
         self.load_dataset()
         self.prompt = self.load_prompt_designer()
 
-        # self.export_json_data(self.train_df, f"{output_dir}/train.json")
-        # self.export_json_data(self.val_df, f"{output_dir}/val.json")
-        # self.export_json_data(self.test_df, f"{output_dir}/test.json")
+        self.export_json_data(self.train_df, f"{output_dir}/train.json")
+        self.export_json_data(self.val_df, f"{output_dir}/val.json")
+        self.export_json_data(self.test_df, f"{output_dir}/test.json")
         self.export_json_data(self.total_df, f"{output_dir}/total.json")
 
     def load_dataset(self) -> None:
         data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), f'dataset/{self.topic}')
         if self.topic == "china":
             data_dir += "/favorability"
-        # self.train_df = pd.read_csv(os.path.join(data_dir, 'train-regression.csv'), header=0, usecols=['text', 'label'])
-        # self.test_df = pd.read_csv(os.path.join(data_dir, 'test-regression.csv'), header=0, usecols=['text', 'label'])
-        # self.val_df = pd.read_csv(os.path.join(data_dir, 'validate-regression.csv'), header=0, usecols=['text', 'label'])
+        self.train_df = pd.read_csv(os.path.join(data_dir, 'train-regression.csv'), header=0, usecols=['text', 'label'])
+        self.test_df = pd.read_csv(os.path.join(data_dir, 'test-regression.csv'), header=0, usecols=['text', 'label'])
+        self.val_df = pd.read_csv(os.path.join(data_dir, 'validate-regression.csv'), header=0, usecols=['text', 'label'])
         self.total_df = pd.read_csv(os.path.join(data_dir, 'total-regression.csv'), header=0, usecols=['text', 'label'])
 
         # self.df = pd.read_csv(os.path.join(data_dir, 'total-regression.csv'), header=0, usecols=['text', 'label'])
@@ -34,9 +34,9 @@ class DataGen(object):
         for k, v in self.translator['labels'].items():
             convert_label_dict[v] = k
         
-        # self.train_df['label'] = self.train_df['label'].map(convert_label_dict)
-        # self.val_df['label'] = self.val_df['label'].map(convert_label_dict)
-        # self.test_df['label'] = self.test_df['label'].map(convert_label_dict)
+        self.train_df['label'] = self.train_df['label'].map(convert_label_dict)
+        self.val_df['label'] = self.val_df['label'].map(convert_label_dict)
+        self.test_df['label'] = self.test_df['label'].map(convert_label_dict)
         self.total_df['label'] = self.total_df['label'].map(convert_label_dict)
         # self.df['label'] = self.df['label'].map(convert_label_dict)
 

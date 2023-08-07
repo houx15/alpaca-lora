@@ -353,6 +353,7 @@ def train(
             prediction = np.append(prediction, output)
             label = result_translator(topic, single_test["output"], translator)
             true = np.append(true, label)
+            print(f'result:{result}\noutput:{output}\nlabel:{label}')
 
         acc = accuracy_score(true, prediction)
         data = pd.DataFrame(data={'predict': prediction, 'true': true})

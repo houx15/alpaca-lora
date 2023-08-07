@@ -27,12 +27,12 @@ def result_translator(topic, result_text, translator):
     #     result_text = result_text.split(splitter)[0] + splitter
     #     if result_text in self.translator['labels'].keys():
     #         break
-    print(f'result text: {result_text}')
+    # print(f'result text: {result_text}')
     
     if result_text in translator['labels'].keys():
         return translator['labels'][result_text]
-    elif 'irrelevant' in result_text:
-        return -9
+    # elif 'irrelevant' in result_text:
+    #     return -9
     elif 'neutral' in result_text:
         return 0
     elif 'slightly' in result_text:
