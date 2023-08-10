@@ -32,6 +32,7 @@ from utils.prompter import Prompter
 from utils.utils import result_translator
 
 from tqdm import tqdm
+import time
 
 
 def train(
@@ -312,6 +313,7 @@ def train(
         max_new_tokens=512,
         **kwargs,
     ):
+        
         inputs = tokenizer(prompt, return_tensors="pt")
         input_ids = inputs["input_ids"].to("cuda:0")
         generation_config = GenerationConfig(
@@ -329,6 +331,7 @@ def train(
             "max_new_tokens": max_new_tokens,
         }
 
+        begin_time = time.time()
         with torch.no_grad():
             generation_output = model.generate(
                 input_ids=input_ids,
@@ -338,9 +341,13 @@ def train(
                 max_new_tokens=max_new_tokens,
             )
         s = generation_output.sequences[0]
+        end_time = time.time()
+        print(f'time cost: {end_time-begin_time}')
         output = tokenizer.decode(s)
         # return output.split("### Response:")[-1].strip()
+        
         return prompter.get_response(output)
+
 
     def eval(test_data):
         prediction = np.array([])

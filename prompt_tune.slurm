@@ -14,4 +14,4 @@ module purge
 module load anaconda3/2023.3
 conda activate llm
 
-python finetune.py --topic 'abortion' --base_model 'chainyo/alpaca-lora-7b' --data_path './json/abortion' --output_dir './output/abortion' --batch_size 32 --micro_batch_size 16 --num_epochs 6 --learning_rate 1e-4 --cutoff_len 256 --val_set_size 200 --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 --lora_target_modules '[q_proj, v_proj]' --train_on_inputs --group_by_length
+python prompt_tune.py --topic 'abortion' --base_model 'chainyo/alpaca-lora-7b' --data_path './json/abortion' --output_dir './output/abortion' --batch_size 16 --micro_batch_size 16 --num_epochs 10 --learning_rate 3e-5 --cutoff_len 256 --val_set_size 200 --lora_r 8 --lora_alpha 16 --lora_dropout 0.05 --lora_target_modules '[q_proj, v_proj]' --train_on_inputs --group_by_length
