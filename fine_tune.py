@@ -180,7 +180,7 @@ def train(
     # train_data = load_dataset("json", data_files=f"{data_path}/train.json")
     # val_data = load_dataset("json", data_files=f"{data_path}/val.json")
     # test_data = load_dataset("json", data_files=f"{data_path}/test.json")
-    dataset = load_dataset("csv", data_files={"train": f"{data_path}/train-regression.csv", "test": [f"{data_path}/test-regression.csv", f"{data_path}/validate-regression.csv"]})
+    dataset = load_dataset("csv", data_files={"train": f"{data_path}/train-regression.csv", "validate": f"{data_path}/validate-regression.csv", "test": f"{data_path}/test-regression.csv"})
     # else:
     #     data = load_dataset(data_path)
 
@@ -222,9 +222,11 @@ def train(
     
     # dataset = dataset.rename_column("label", "labels")
     train_data = dataset["train"].shuffle().map(generate_and_tokenize_prompt)
+    val_data = dataset["validate"].shuffle().map(generate_and_tokenize_prompt)
     test_data = dataset["test"].shuffle().map(generate_and_tokenize_prompt)
 
     train_data = train_data.remove_columns(["label"])
+    val_data = val_data.remove_columns(["label"])
     test_data = test_data.remove_columns(["label"])
 
     if not ddp and torch.cuda.device_count() > 1:
@@ -235,7 +237,7 @@ def train(
     trainer = transformers.Trainer(
         model=model,
         train_dataset=train_data,
-        eval_dataset=test_data,
+        eval_dataset=val_data,
         args=transformers.TrainingArguments(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
