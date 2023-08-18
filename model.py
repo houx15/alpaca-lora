@@ -609,7 +609,7 @@ class LlamaModel(object):
             self.model = torch.compile(self.model)
 
         # TODO
-        pred = predictor.predict(test_dataset=self.train_data)
+        pred = predictor.predict(test_dataset=self.test_data)
         print(pred.metrics)
         prediction = pred.predictions[0].flatten()
         prediction = np.clip(prediction, -2, 2)
