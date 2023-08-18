@@ -1,4 +1,4 @@
-out/
+output/*
 7B/
 13B/
 __pycache__/
@@ -13,3 +13,8 @@ test_data.json
 todo.txt
 .venv
 .vscode
+
+.DS_Store
+slurm-*
+logs/*
+PEFT/*

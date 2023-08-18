@@ -7,17 +7,15 @@ import torch
 import transformers
 from datasets import load_dataset
 
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, mean_squared_error
+from sklearn.metrics import (
+    accuracy_score,
+    precision_recall_fscore_support,
+    mean_squared_error,
+)
 import numpy as np
 import pandas as pd
 
 import json
-
-"""
-Unused imports:
-import torch.nn as nn
-import bitsandbytes as bnb
-"""
 
 from peft import (
     LoraConfig,
@@ -25,9 +23,14 @@ from peft import (
     get_peft_model_state_dict,
     prepare_model_for_int8_training,
     set_peft_model_state_dict,
-    TaskType
+    TaskType,
 )
-from transformers import LlamaForCausalLM, LlamaTokenizer, GenerationConfig, LlamaForSequenceClassification
+from transformers import (
+    LlamaForCausalLM,
+    LlamaTokenizer,
+    GenerationConfig,
+    LlamaForSequenceClassification,
+)
 
 from utils.prompter import Prompter
 from utils.utils import result_translator, sentence_cleaner
@@ -173,6 +176,7 @@ def train(
         bias="none",
         task_type=TaskType.SEQ_CLS,
     )
+    print(config)
     model = get_peft_model(model, config)
 
     # if data_path.endswith(".json") or data_path.endswith(".jsonl"):
@@ -180,7 +184,14 @@ def train(
     # train_data = load_dataset("json", data_files=f"{data_path}/train.json")
     # val_data = load_dataset("json", data_files=f"{data_path}/val.json")
     # test_data = load_dataset("json", data_files=f"{data_path}/test.json")
-    dataset = load_dataset("csv", data_files={"train": f"{data_path}/train-regression.csv", "validate": f"{data_path}/validate-regression.csv", "test": f"{data_path}/test-regression.csv"})
+    dataset = load_dataset(
+        "csv",
+        data_files={
+            "train": f"{data_path}/train-regression.csv",
+            "validate": f"{data_path}/validate-regression.csv",
+            "test": f"{data_path}/test-regression.csv",
+        },
+    )
     # else:
     #     data = load_dataset(data_path)
 
@@ -219,7 +230,7 @@ def train(
     # else:
     #     train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
     #     val_data = None
-    
+
     # dataset = dataset.rename_column("label", "labels")
     train_data = dataset["train"].shuffle().map(generate_and_tokenize_prompt)
     val_data = dataset["validate"].shuffle().map(generate_and_tokenize_prompt)
@@ -284,35 +295,44 @@ def train(
         "\n If there's a warning about missing keys above, please disregard :)"
     )
 
-    '''
+    """
     evaluate
-    '''
+    """
     model.eval()
     error_analysis = {}
+
     def regression_metrics_compute(pred):
         # error_analysis = {}
         labels = pred.label_ids
-        preds = pred.predictions[0] if isinstance(pred.predictions, tuple) else pred.predictions
+        preds = (
+            pred.predictions[0]
+            if isinstance(pred.predictions, tuple)
+            else pred.predictions
+        )
         preds = np.squeeze(preds)
-        
+
         rmse = mean_squared_error(labels, preds, squared=False)
-        
+
         integerized_preds = np.around(preds)
-        integerized_rmse = mean_squared_error(labels, integerized_preds, squared=False)
-        
+        integerized_rmse = mean_squared_error(
+            labels, integerized_preds, squared=False
+        )
+
         diff = np.subtract(integerized_preds, labels)
         # when integerized_pred equals to label, assume there diff is 0
         label_precision_preds = np.where(diff, preds, labels)
-        label_precision_rmse = mean_squared_error(labels, label_precision_preds, squared=False)
+        label_precision_rmse = mean_squared_error(
+            labels, label_precision_preds, squared=False
+        )
         for idx, x in np.ndenumerate(labels):
             preds_set = error_analysis.get(x, np.array(0))
             preds_set = np.append(preds_set, preds[idx])
             error_analysis[x] = preds_set
-        
+
         return {
-            'rmse': rmse,
-            'integerized_rmse': integerized_rmse,
-            'label_precision_rmse': label_precision_rmse
+            "rmse": rmse,
+            "integerized_rmse": integerized_rmse,
+            "label_precision_rmse": label_precision_rmse,
         }
 
     predictor = transformers.Trainer(
@@ -327,7 +347,7 @@ def train(
         data_collator=transformers.DataCollatorWithPadding(
             tokenizer, return_tensors="pt"
         ),
-        compute_metrics=regression_metrics_compute
+        compute_metrics=regression_metrics_compute,
     )
 
     pred = trainer.predict(test_dataset=test_data)
@@ -341,15 +361,15 @@ def train(
     # creterion = SmoothL1Loss()
 
     for k, v in pred.metrics.items():
-        print(f'{k}:    {v}')
+        print(f"{k}:    {v}")
     for k, s in error_analysis.items():
-        true = np.ones(s.shape)*k
+        true = np.ones(s.shape) * k
         rmse = mean_squared_error(true, s, squared=False)
         rmse_dict[k] = rmse
         # true = torch.from_numpy(true)
         # s = torch.from_numpy(s)
         # huber = creterion(s, true)
-        print(f'{k}:    rmse-{rmse}')
+        print(f"{k}:    rmse-{rmse}")
         # log(log_file, f'{str(k)}:    rmse-{str(rmse)}; huber-{huber}')
 
     torch.cuda.empty_cache()

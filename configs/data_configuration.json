@@ -1,0 +1,413 @@
+{
+    "2022-01-13-gun-sample-junming": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2023-04-08-openai": {
+        "text": "tweet",
+        "label": "cleaned",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on gun rights/control": 0,
+                "strongly support strict gun control": 1,
+                "strongly support gun rights": 1,
+                "slightly support strict gun control": 1,
+                "neutral to gun rights/control": 1,
+                "slightly support gun rights": 1
+            },
+            "regression": {
+                "irrelevant or no opinion on gun rights/control": "skip",
+                "strongly support strict gun control": 2,
+                "strongly support gun rights": -2,
+                "slightly support strict gun control": 1,
+                "neutral to gun rights/control": 0,
+                "slightly support gun rights": -1
+            }
+        }
+    },
+    "2022-01-31-gun-sample-amturk-label-output": {
+        "text": "tweet_text",
+        "label": "covid3-gun-5k",
+        "label_strategy": {
+            "binary": {
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "3": 1,
+                "4": 1,
+                "5": 0
+            },
+            "regression": {
+                "0": -2,
+                "1": -1,
+                "2": 0,
+                "3": 1,
+                "4": 2,
+                "5": "skip"
+            }
+        }
+    },
+    "2022-02-17-gun-sample-briony koji": {
+        "text": "text",
+        "label": "label",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on gun rights/control": 0,
+                "strongly support strict gun control": 1,
+                "strongly support gun rights": 1,
+                "slightly support strict gun control": 1,
+                "neutral to gun rights/control": 1,
+                "slightly support gun rights": 1
+            },
+            "regression": {
+                "irrelevant or no opinion on gun rights/control": "skip",
+                "strongly support strict gun control": 2,
+                "strongly support gun rights": -2,
+                "slightly support strict gun control": 1,
+                "neutral to gun rights/control": 0,
+                "slightly support gun rights": -1
+            }
+        }
+    },
+    "2020-08-11-china-sample-warmth-en-ground-truth": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2020-08-11-china-sample-warmth-en-karla": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2020-08-11-china-sample-competence-en-ground-truth": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2020-08-11-china-sample-competence-en-karla": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2020-08-11-china-sample-favorability-en-ground-truth": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2020-08-11-china-sample-favorability-en-karla": {
+        "text": "text",
+        "label": "label_code",
+        "label_strategy": {
+            "binary": {
+                "-2": 1,
+                "-1": 1,
+                "0": 1,
+                "1": 1,
+                "2": 1,
+                "-99": 0
+            },
+            "regression": {
+                "-99": "skip"
+            }
+        }
+    },
+    "2022-03-12-sample-us-labeled-competence": {
+        "text": "weibo_content",
+        "label": "label",
+        "label_strategy": {
+            "binary": {
+                "无关话题或未表态 (irrelevant or no opinion)": 0,
+                "非常没有能力 (most incompetent)": 1,
+                "比较没有能力 (somewhat incompetent)": 1,
+                "中立 (neutral)": 1,
+                "比较有能力 (somewhat competent)": 1,
+                "非常有能力 (most competent)": 1
+            },
+            "regression": {
+                "无关话题或未表态 (irrelevant or no opinion)": "skip",
+                "非常没有能力 (most incompetent)": -2,
+                "比较没有能力 (somewhat incompetent)": -1,
+                "中立 (neutral)": 0,
+                "比较有能力 (somewhat competent)": 1,
+                "非常有能力 (most competent)": 2
+            }
+        }
+    },
+    "2022-03-12-sample-us-labeled-favorability": {
+        "text": "weibo_content",
+        "label": "label",
+        "label_strategy": {
+            "binary": {
+                "无关话题或未表态 (irrelevant or no opinion)": 0,
+                "非常不喜欢 (most unfavorable)": 1,
+                "比较不喜欢 (somewhat unfavorable)": 1,
+                "中立 (neutral)": 1,
+                "比较喜欢 (somewhat favorable)": 1,
+                "非常喜欢 (most favorable)": 1
+            },
+            "regression": {
+                "无关话题或未表态 (irrelevant or no opinion)": "skip",
+                "非常不喜欢 (most unfavorable)": -2,
+                "比较不喜欢 (somewhat unfavorable)": -1,
+                "中立 (neutral)": 0,
+                "比较喜欢 (somewhat favorable)": 1,
+                "非常喜欢 (most favorable)": 2
+            }
+        }
+    },
+    "2022-03-12-sample-us-labeled-warmth": {
+        "text": "weibo_content",
+        "label": "label",
+        "label_strategy": {
+            "binary": {
+                "无关话题或未表态 (irrelevant or no opinion)": 0,
+                "非常不友好 (most unfriendly)": 1,
+                "比较不友好 (somewhat unfriendly)": 1,
+                "中立 (neutral)": 1,
+                "比较友好 (somewhat friendly)": 1,
+                "非常友好 (most friendly)": 1
+            },
+            "regression": {
+                "无关话题或未表态 (irrelevant or no opinion)": "skip",
+                "非常不友好 (most unfriendly)": -2,
+                "比较不友好 (somewhat unfriendly)": -1,
+                "中立 (neutral)": 0,
+                "比较友好 (somewhat friendly)": 1,
+                "非常友好 (most friendly)": 2
+            }
+        }
+    },
+    "2022-02-05-drug-legalization-aggregated": {
+        "text": "text",
+        "label": "label-aej",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on drug legalization": 0,
+                "strongly support prohibition": 1,
+                "slightly support prohibition": 1,
+                "neutral to drug legalization (decriminalized but not encouraged)": 1,
+                "slightly support legalization": 1,
+                "strongly support legalization": 1
+            },
+            "regression": {
+                "irrelevant or no opinion on drug legalization": "skip",
+                "strongly support prohibition": 2,
+                "slightly support prohibition": 1,
+                "neutral to drug legalization (decriminalized but not encouraged)": 0,
+                "slightly support legalization": -1,
+                "strongly support legalization": -2
+            }
+        }
+    },
+    "2023-02-13-drug-legalization-aggregated": {
+        "text": "text",
+        "label": "josephine",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on drug legalization": 0,
+                "strongly support prohibition": 1,
+                "slightly support prohibition": 1,
+                "neutral to drug legalization (decriminalized but not encouraged)": 1,
+                "slightly support legalization": 1,
+                "strongly support legalization": 1
+            },
+            "regression": {
+                "irrelevant or no opinion on drug legalization": "skip",
+                "strongly support prohibition": 2,
+                "slightly support prohibition": 1,
+                "neutral to drug legalization (decriminalized but not encouraged)": 0,
+                "slightly support legalization": -1,
+                "strongly support legalization": -2
+            }
+        }
+    },
+    "2022-10-15-abortion-aggregated": {
+        "text": "text",
+        "label": "label-aj",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on abortion": 0,
+                "strongly believe abortion should be legal": 1,
+                "slightly believe abortion should be legal": 1,
+                "neutral to abortion rights/restrictions": 1,
+                "slightly believe abortion should be illegal": 1,
+                "strongly believe abortion should be illegal": 1
+            },
+            "regression": {
+                "irrelevant or no opinion on abortion": "skip",
+                "strongly believe abortion should be legal": 2,
+                "slightly believe abortion should be legal": 1,
+                "neutral to abortion rights/restrictions": 0,
+                "slightly believe abortion should be illegal": -1,
+                "strongly believe abortion should be illegal": -2
+            }
+        }
+    },
+    "2022-11-02-climate-change-sample-molardata": {
+        "text": "weibo_content",
+        "label": "label_sw",
+        "label_strategy": {
+            "ternary": {
+                "1": 0,
+                "2": 1,
+                "3": 2
+            },
+            "regression": {}
+        }
+    },
+    "2022-11-14-climate-change-sample-molardata": {
+        "text": "weibo_content",
+        "label": "label",
+        "label_strategy": {
+            "ternary": {
+                "1": 0,
+                "2": 1,
+                "3": 2
+            },
+            "regression": {}
+        }
+    },
+    "2023-01-03-climate-change-aggregated": {
+        "text": "text",
+        "label": "allan",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on climate change": 0,
+                "strongly agree with climate change": 1,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 1,
+                "slightly disagree with climate change": 1,
+                "strongly disagree with climate change": 1,
+                "review with junming": "skip"
+            },
+            "regression": {
+                "irrelevant or no opinion on climate change": "skip",
+                "strongly agree with climate change": 2,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 0,
+                "slightly disagree with climate change": -1,
+                "strongly disagree with climate change": -2,
+                "review with junming": "skip"
+            }
+        }
+    },
+    "2023-03-04-climate-change-aggregated": {
+        "text": "text",
+        "label": "allan",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on climate change": 0,
+                "strongly agree with climate change": 1,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 1,
+                "slightly disagree with climate change": 1,
+                "strongly disagree with climate change": 1,
+                "review with junming": "skip"
+            },
+            "regression": {
+                "irrelevant or no opinion on climate change": "skip",
+                "strongly agree with climate change": 2,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 0,
+                "slightly disagree with climate change": -1,
+                "strongly disagree with climate change": -2,
+                "review with junming": "skip"
+            }
+        }
+    },
+    "2023-04-02-sexual-orientation-aggregated": {
+        "text": "text",
+        "label": "label-aj",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on lgbt+ rights/issues": 0,
+                "strongly conservative on lgbt+ issues": 1,
+                "slightly conservative on lgbt+ issues": 1,
+                "neutral to lgbt+ rights/issues": 1,
+                "slightly support lgbt+ rights": 1,
+                "strongly support lgbt+ rights": 1
+            },
+            "regression": {
+                "irrelevant or no opinion on lgbt+ rights/issues": "skip",
+                "strongly conservative on lgbt+ issues": -2,
+                "slightly conservative on lgbt+ issues": -1,
+                "neutral to lgbt+ rights/issues": 0,
+                "slightly support lgbt+ rights": 1,
+                "strongly support lgbt+ rights": 2
+            }
+        }
+    }
+}
