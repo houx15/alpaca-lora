@@ -20,3 +20,4 @@ todo.txt
 slurm-*
 logs/*
 PEFT/*
+*.slrum
