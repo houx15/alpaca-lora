@@ -18,7 +18,8 @@ model_dict = {
 
 peft_dict = {
     "7b": "PEFT/alpaca-lora-7b", 
-    "13b": "PEFT/alpaca-13b-lora"
+    "13b": "PEFT/alpaca-13b-lora",
+    "llama-2-13b": None
 }
 
 
@@ -30,7 +31,7 @@ def run(
     dataset_update: bool = False,
     augmentation: bool = False,
     task_type: str = "regression",  # options: regression or binary
-    strategy: str = "sequence",  # options: sequence or generation
+    strategy: str = "sequence",  # options: sequence, generation or prompt
     model_type: str = "7b",  # options: 7b or 13b
     labeller: str = None,
     peft: bool = True,

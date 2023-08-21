@@ -15,6 +15,8 @@ from peft import (
     prepare_model_for_kbit_training,
     set_peft_model_state_dict,
     TaskType,
+    PromptTuningConfig,
+    PromptTuningInit,
 )
 
 from transformers import (
@@ -113,7 +115,7 @@ class LlamaModel(object):
         if data_path is None:
             data_path = (
                 f"json/{topic}"
-                if strategy == "generation"
+                if strategy == "generation" or strategy == 'prompt'
                 else f"dataset/{topic}"
             )
             # TODO adapt to dimensions in the future
@@ -193,7 +195,7 @@ class LlamaModel(object):
         )
         self.tokenizer.padding_side = "left"  # Allow batched inference
 
-        if strategy == "generation":
+        if strategy == "generation" or strategy == 'prompt':
             self.prompter = Prompter(prompt_template_name)
         
         self.data_loader(data_path)
@@ -201,7 +203,7 @@ class LlamaModel(object):
     def model_init(
         self,
     ):
-        if self.strategy not in ["sequence", "generation"]:
+        if self.strategy not in ["sequence", "generation", "prompt"]:
             raise NotImplementedError(
                 f"strategy type {self.strategy} not implemented"
             )
@@ -227,7 +229,7 @@ class LlamaModel(object):
                 else torch.int8,
                 device_map=self.device_map,
             )
-        elif self.strategy == "generation":
+        elif self.strategy == "generation" or self.strategy == 'prompt':
             model = LlamaForCausalLM.from_pretrained(
                 self.base_model,
                 load_in_8bit=self.load_8bit,
@@ -250,16 +252,26 @@ class LlamaModel(object):
                     is_trainable=True,
                 )
             else:
-                config = LoraConfig(
-                    r=self.config.lora_r,
-                    lora_alpha=self.config.lora_alpha,
-                    target_modules=self.config.lora_target_modules,
-                    lora_dropout=self.config.lora_dropout,
-                    bias="none",
-                    task_type=TaskType.SEQ_CLS
-                    if self.strategy == "sequence"
-                    else TaskType.CAUSAL_LM,
-                )
+                if self.strategy == 'prompt':
+                    config = PromptTuningConfig(
+                        task_type=TaskType.CAUSAL_LM,
+                        prompt_tuning_init=PromptTuningInit.TEXT,
+                        num_virtual_tokens=30,
+                        prompt_tuning_init_text="Analyze a tweet's opinion on abortion and give an answer from the following choices: irrelevant or no opinion on abortion, strongly believe abortion should be illegal, slightly believe abortion should be illegal, neutral to abortion rights/restrictions, slightly believe abortion should be legal, strongly believe abortion should be legal.",
+                        # prompt_tuning_init_text="Analyze a tweet's opinion on abortion and give an answer from the following choices: irrelevant, highly illegal, slightly illegal, neutral, slightly legal, highly legal",
+                        tokenizer_name_or_path=self.base_model
+                    )
+                elif self.strategy == 'generation':
+                    config = LoraConfig(
+                        r=self.config.lora_r,
+                        lora_alpha=self.config.lora_alpha,
+                        target_modules=self.config.lora_target_modules,
+                        lora_dropout=self.config.lora_dropout,
+                        bias="none",
+                        task_type=TaskType.SEQ_CLS
+                        if self.strategy == "sequence"
+                        else TaskType.CAUSAL_LM,
+                    )
                 model = get_peft_model(model, config)
 
             if self.resume_from_checkpoint:
@@ -283,6 +295,7 @@ class LlamaModel(object):
                     print(f"Checkpoint {checkpoint_name} not found")
 
             model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
+        
         if not self.ddp and torch.cuda.device_count() > 1:
             model.is_parallelizable = True
             model.model_parallel = True
@@ -392,7 +405,8 @@ class LlamaModel(object):
             self.train_data = self.train_data.remove_columns(["label"])
             self.validate_data = self.validate_data.remove_columns(["label"])
             self.test_data = self.test_data.remove_columns(["label"])
-        else:
+        
+        elif self.strategy == 'generation' or self.strategy == 'prompt':
             dataset = load_dataset(
                 "json",
                 data_files={
@@ -401,6 +415,7 @@ class LlamaModel(object):
                     "test": f"{data_path}/test.json",
                 },
             )
+            print("dataset loaded")
             self.train_data = (
                 dataset["train"]
                 .shuffle()
@@ -412,7 +427,7 @@ class LlamaModel(object):
                 .map(self.generate_and_tokenize_prompt)
             )
             self.test_data = (
-                dataset["text"]
+                dataset["test"]
                 .shuffle()
                 .map(self.generate_and_tokenize_prompt)
             )
