@@ -6,7 +6,7 @@ from typing import List
 import torch
 import transformers
 from datasets import load_dataset
-    
+
 from peft import (
     LoraConfig,
     PeftModel,
@@ -193,10 +193,10 @@ class LlamaModel(object):
         )
         self.tokenizer.padding_side = "left"  # Allow batched inference
 
-        self.data_loader(data_path)
-
         if strategy == "generation":
             self.prompter = Prompter(prompt_template_name)
+        
+        self.data_loader(data_path)
 
     def model_init(
         self,
@@ -691,7 +691,7 @@ class LlamaModel(object):
         prediction = np.array([])
         true = np.array([])
         print("evaluate begin...")
-        for idx, single_test in tqdm(enumerate(self.test_data)):
+        for idx, single_test in enumerate(tqdm(self.test_data)):
             single_prompt = self.prompter.generate_prompt(
                 single_test["instruction"], single_test["input"]
             )
