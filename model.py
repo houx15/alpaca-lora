@@ -195,8 +195,10 @@ class LlamaModel(object):
         )
         self.tokenizer.padding_side = "left"  # Allow batched inference
 
-        if strategy == "generation" or strategy == 'prompt':
+        if strategy == "generation":
             self.prompter = Prompter(prompt_template_name)
+        elif strategy == 'prompt':
+            self.prompter = Prompter('prompt-tuning')
         
         self.data_loader(data_path)
 
@@ -333,28 +335,20 @@ class LlamaModel(object):
     def generate_and_tokenize_prompt(self, data_point):
         text = sentence_cleaner(data_point["input"])
         full_prompt = self.prompter.generate_prompt(
-            data_point["instruction"],
-            text,
-            data_point["output"],
+            instruction=data_point["instruction"] if self.strategy == 'generation' else None,
+            input=text,
+            label=data_point["output"],
         )
         tokenized_full_prompt = self.prompt_tokenizer(full_prompt)
+
         if not self.config.train_on_inputs:
             user_prompt = self.prompter.generate_prompt(
-                data_point["instruction"], text
+                instruction=data_point["instruction"] if self.strategy == 'generation' else None,
+                input=text,
             )
-            tokenized_user_prompt = self.prompt_tokenizer(
-                user_prompt, add_eos_token=self.config.add_eos_token
-            )
+            tokenized_user_prompt = self.prompt_tokenizer(user_prompt, add_eos_token=False)
             user_prompt_len = len(tokenized_user_prompt["input_ids"])
-
-            if self.config.add_eos_token:
-                user_prompt_len -= 1
-
-            tokenized_full_prompt["labels"] = [
-                -100
-            ] * user_prompt_len + tokenized_full_prompt["labels"][
-                user_prompt_len:
-            ]  # could be sped up, probably
+            tokenized_full_prompt["labels"] = [-100] * user_prompt_len + tokenized_full_prompt["labels"][user_prompt_len:]
         return tokenized_full_prompt
 
     def sequence_tokenizer(self, data_point, add_eos_token=True):
@@ -415,7 +409,6 @@ class LlamaModel(object):
                     "test": f"{data_path}/test.json",
                 },
             )
-            print("dataset loaded")
             self.train_data = (
                 dataset["train"]
                 .shuffle()
@@ -656,7 +649,7 @@ class LlamaModel(object):
         top_p=0.65,
         top_k=35,
         repetition_penalty=1.1,
-        max_new_tokens=512,
+        max_new_tokens=20,
         **kwargs,
     ):
         inputs = self.tokenizer(prompt, return_tensors="pt")
@@ -690,7 +683,7 @@ class LlamaModel(object):
 
         return self.prompter.get_response(output)
 
-    def generation_eval(self):
+    def generatifon_eval(self):
         self.model.eval()
         with open(
             os.path.join(
@@ -708,14 +701,13 @@ class LlamaModel(object):
         print("evaluate begin...")
         for idx, single_test in enumerate(tqdm(self.test_data)):
             single_prompt = self.prompter.generate_prompt(
-                single_test["instruction"], single_test["input"]
+                instruction=single_test["instruction"] if self.strategy == 'generation' else None,
+                input=single_test["input"],
             )
             result = self.single_prompt_evaluate(single_prompt)
             output = result_translator(self.topic, result, translator)
             prediction = np.append(prediction, output)
-            label = result_translator(
-                self.topic, single_test["output"], translator
-            )
+            label = result_translator(self.topic, single_test["output"], translator)
             true = np.append(true, label)
             print(f"result:{result}\noutput:{output}\nlabel:{label}")
 
