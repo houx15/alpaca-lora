@@ -14,4 +14,4 @@ module purge
 module load anaconda3/2023.3
 conda activate Alpaca
 
-python run.py --topic 'abortion' --do_train --strategy prompt --model_type llama-2-13b --micro_batch_size 16
+python run.py --topic 'abortion' --do_train --strategy prompt --model_type llama-2-13b

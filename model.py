@@ -55,7 +55,7 @@ class TrainingPara(object):
     lora_alpha: int = 16
     lora_dropout: float = 0.05
     lora_target_modules: List[str] = ["q_proj", "v_proj"]
-    train_on_inputs: bool = True  # if False, masks out inputs in loss
+    train_on_inputs: bool = False  # if False, masks out inputs in loss
     add_eos_token: bool = False
     group_by_length: bool = (
         False  # faster, but produces an odd training loss curve
@@ -313,43 +313,29 @@ class LlamaModel(object):
         self.model = model
         return model
 
-    def prompt_tokenizer(self, prompt, add_eos_token=True):
-        result = self.tokenizer(
-            prompt,
-            truncation=True,
-            max_length=self.config.cutoff_len,
-            padding=False,
-            return_tensors=None,
-        )
-        if (
-            result["input_ids"][-1] != self.tokenizer.eos_token_id
-            and len(result["input_ids"]) < self.config.cutoff_len
-            and add_eos_token
-        ):
-            result["input_ids"].append(self.tokenizer.eos_token_id)
-            result["attention_mask"].append(1)
-
-        result["labels"] = result["input_ids"].copy()
-        return result
-
     def generate_and_tokenize_prompt(self, data_point):
         text = sentence_cleaner(data_point["input"])
-        full_prompt = self.prompter.generate_prompt(
+        inputs = self.prompter.generate_prompt(
             instruction=data_point["instruction"] if self.strategy == 'generation' else None,
             input=text,
-            label=data_point["output"],
+            label=None
         )
-        tokenized_full_prompt = self.prompt_tokenizer(full_prompt)
-
+        targets = data_point["output"]
+        model_input = self.tokenizer(
+            inputs,
+            truncation=True,
+            max_length = self.config.cutoff_len,
+        )
+        labels = self.tokenizer(targets)
+        input_ids = model_input['input_ids']
+        label_input_ids = labels['input_ids'] + [self.tokenizer.eos_token_id]
+        model_input['input_ids'] = input_ids + label_input_ids
         if not self.config.train_on_inputs:
-            user_prompt = self.prompter.generate_prompt(
-                instruction=data_point["instruction"] if self.strategy == 'generation' else None,
-                input=text,
-            )
-            tokenized_user_prompt = self.prompt_tokenizer(user_prompt, add_eos_token=False)
-            user_prompt_len = len(tokenized_user_prompt["input_ids"])
-            tokenized_full_prompt["labels"] = [-100] * user_prompt_len + tokenized_full_prompt["labels"][user_prompt_len:]
-        return tokenized_full_prompt
+            model_input['labels'] = [-100] * len(input_ids) + label_input_ids
+        else:
+            model_input['labels'] = input_ids + label_input_ids
+        model_input['attention_mask'] = [1] * len(model_input["input_ids"])
+        return model_input
 
     def sequence_tokenizer(self, data_point, add_eos_token=True):
         text = sentence_cleaner(data_point["text"])

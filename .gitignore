@@ -10,6 +10,8 @@ lora-**
 wandb
 evaluate.py
 test_data.json
+inference.py
+inference.slurm
 todo.txt
 .venv
 .vscode
