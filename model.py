@@ -39,6 +39,7 @@ import pandas as pd
 import json
 
 from tqdm import tqdm
+import tensorboardX
 
 
 class TrainingPara(object):
@@ -286,6 +287,14 @@ class LlamaModel(object):
             model.is_parallelizable = True
             model.model_parallel = True
 
+        model.config.use_cache = False
+        old_state_dict = model.state_dict
+        model.state_dict = (
+            lambda self, *_, **__: get_peft_model_state_dict(
+                self, old_state_dict()
+            )
+        ).__get__(model, type(model))
+
         self.model = model
         return model
 
@@ -504,7 +513,7 @@ class LlamaModel(object):
                 # remove_unused_columns=False,
                 label_names=["labels"],
                 load_best_model_at_end=True,
-                metric_for_best_model="loss"
+                metric_for_best_model="rmse"
                 if self.task_type == "regression"
                 else "accuracy",
                 ddp_find_unused_parameters=False if self.ddp else None,
@@ -532,16 +541,16 @@ class LlamaModel(object):
             else:
                 self.trainer.compute_metrics = self.regression_metrics_compute
 
-        self.model.config.use_cache = False
-        old_state_dict = self.model.state_dict
-        self.model.state_dict = (
-            lambda self, *_, **__: get_peft_model_state_dict(
-                self, old_state_dict()
-            )
-        ).__get__(self.model, type(self.model))
+        # self.model.config.use_cache = False
+        # old_state_dict = self.model.state_dict
+        # self.model.state_dict = (
+        #     lambda self, *_, **__: get_peft_model_state_dict(
+        #         self, old_state_dict()
+        #     )
+        # ).__get__(self.model, type(self.model))
 
-        if torch.__version__ >= "2" and sys.platform != "win32":
-            self.model = torch.compile(self.model)
+        # if torch.__version__ >= "2" and sys.platform != "win32":
+        #     self.model = torch.compile(self.model)
 
         if parameter_search:
             import optuna
@@ -579,6 +588,10 @@ class LlamaModel(object):
                 # report_to="wandb",
                 # run_name=wandb_run_name if use_wandb else None,
                 logging_dir=self.log_dir,
+                fp16=True,
+                optim=self.config.optim,
+                ddp_find_unused_parameters=False if self.ddp else None,
+                group_by_length=False
                 # remove_unused_columns=False,
             ),
             data_collator=transformers.DataCollatorWithPadding(
@@ -597,16 +610,8 @@ class LlamaModel(object):
         )
         print(self.test_data)
 
-        self.model.config.use_cache = False
-        old_state_dict = self.model.state_dict
-        self.model.state_dict = (
-            lambda self, *_, **__: get_peft_model_state_dict(
-                self, old_state_dict()
-            )
-        ).__get__(self.model, type(self.model))
-
-        if torch.__version__ >= "2" and sys.platform != "win32":
-            self.model = torch.compile(self.model)
+        # if torch.__version__ >= "2" and sys.platform != "win32":
+        #     self.model = torch.compile(self.model)
 
         # TODO
         pred = predictor.predict(test_dataset=self.test_data)
