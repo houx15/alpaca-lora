@@ -669,7 +669,7 @@ class LlamaModel(object):
 
         return self.prompter.get_response(output)
 
-    def generatifon_eval(self):
+    def generation_eval(self):
         self.model.eval()
         with open(
             os.path.join(
