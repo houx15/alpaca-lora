@@ -13,13 +13,15 @@ from model import LlamaModel
 model_dict = {
     "7b": "chainyo/alpaca-lora-7b",
     "13b": "yahma/llama-13b-hf",
-    "llama-2-13b": "meta-llama/Llama-2-13b-chat-hf"
+    "llama-2-13b-chat": "meta-llama/Llama-2-13b-chat-hf",
+    "llama-2-13b-chat": "meta-llama/Llama-2-13b-hf",
 }
 
 peft_dict = {
     "7b": "PEFT/alpaca-lora-7b", 
     "13b": "PEFT/alpaca-13b-lora",
-    "llama-2-13b": None
+    "llama-2-13b-chat": None,
+    "llama-2-13b": None,
 }
 
 
