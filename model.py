@@ -79,7 +79,7 @@ class LlamaModel(object):
         # model/data params
         self,
         topic: str = None,
-        strategy: str = "sequence",  # sequence or generation
+        strategy: str = "sequence",  # sequence or generation or prompt
         task_type: str = "regression",  # regression or binary, disabled for generation
         base_model: str = "",  # the only required argument
         model_type: str = "7b",  # 7b or 13b
@@ -115,7 +115,7 @@ class LlamaModel(object):
         if data_path is None:
             data_path = (
                 f"json/{topic}"
-                if strategy == "generation" or strategy == 'prompt'
+                if strategy == "generation" or strategy == "prompt"
                 else f"dataset/{topic}"
             )
             # TODO adapt to dimensions in the future
@@ -197,9 +197,9 @@ class LlamaModel(object):
 
         if strategy == "generation":
             self.prompter = Prompter(prompt_template_name)
-        elif strategy == 'prompt':
-            self.prompter = Prompter('prompt-tuning')
-        
+        elif strategy == "prompt":
+            self.prompter = Prompter("prompt-tuning")
+
         self.data_loader(data_path)
 
     def model_init(
@@ -231,7 +231,7 @@ class LlamaModel(object):
                 else torch.int8,
                 device_map=self.device_map,
             )
-        elif self.strategy == "generation" or self.strategy == 'prompt':
+        elif self.strategy == "generation" or self.strategy == "prompt":
             model = LlamaForCausalLM.from_pretrained(
                 self.base_model,
                 load_in_8bit=self.load_8bit,
@@ -254,16 +254,16 @@ class LlamaModel(object):
                     is_trainable=True,
                 )
             else:
-                if self.strategy == 'prompt':
+                if self.strategy == "prompt":
                     config = PromptTuningConfig(
                         task_type=TaskType.CAUSAL_LM,
                         prompt_tuning_init=PromptTuningInit.TEXT,
                         num_virtual_tokens=30,
                         prompt_tuning_init_text="Analyze a tweet's opinion on abortion and give an answer from the following choices: irrelevant or no opinion on abortion, strongly believe abortion should be illegal, slightly believe abortion should be illegal, neutral to abortion rights/restrictions, slightly believe abortion should be legal, strongly believe abortion should be legal.",
                         # prompt_tuning_init_text="Analyze a tweet's opinion on abortion and give an answer from the following choices: irrelevant, highly illegal, slightly illegal, neutral, slightly legal, highly legal",
-                        tokenizer_name_or_path=self.base_model
+                        tokenizer_name_or_path=self.base_model,
                     )
-                elif self.strategy == 'generation':
+                elif self.strategy in ["generation", "sequence"]:
                     config = LoraConfig(
                         r=self.config.lora_r,
                         lora_alpha=self.config.lora_alpha,
@@ -297,7 +297,7 @@ class LlamaModel(object):
                     print(f"Checkpoint {checkpoint_name} not found")
 
             model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
-        
+
         if not self.ddp and torch.cuda.device_count() > 1:
             model.is_parallelizable = True
             model.model_parallel = True
@@ -316,25 +316,27 @@ class LlamaModel(object):
     def generate_and_tokenize_prompt(self, data_point):
         text = sentence_cleaner(data_point["input"])
         inputs = self.prompter.generate_prompt(
-            instruction=data_point["instruction"] if self.strategy == 'generation' else None,
+            instruction=data_point["instruction"]
+            if self.strategy == "generation"
+            else None,
             input=text,
-            label=None
+            label=None,
         )
         targets = data_point["output"]
         model_input = self.tokenizer(
             inputs,
             truncation=True,
-            max_length = self.config.cutoff_len,
+            max_length=self.config.cutoff_len,
         )
         labels = self.tokenizer(targets)
-        input_ids = model_input['input_ids']
-        label_input_ids = labels['input_ids'] + [self.tokenizer.eos_token_id]
-        model_input['input_ids'] = input_ids + label_input_ids
+        input_ids = model_input["input_ids"]
+        label_input_ids = labels["input_ids"] + [self.tokenizer.eos_token_id]
+        model_input["input_ids"] = input_ids + label_input_ids
         if not self.config.train_on_inputs:
-            model_input['labels'] = [-100] * len(input_ids) + label_input_ids
+            model_input["labels"] = [-100] * len(input_ids) + label_input_ids
         else:
-            model_input['labels'] = input_ids + label_input_ids
-        model_input['attention_mask'] = [1] * len(model_input["input_ids"])
+            model_input["labels"] = input_ids + label_input_ids
+        model_input["attention_mask"] = [1] * len(model_input["input_ids"])
         return model_input
 
     def sequence_tokenizer(self, data_point, add_eos_token=True):
@@ -385,8 +387,8 @@ class LlamaModel(object):
             self.train_data = self.train_data.remove_columns(["label"])
             self.validate_data = self.validate_data.remove_columns(["label"])
             self.test_data = self.test_data.remove_columns(["label"])
-        
-        elif self.strategy == 'generation' or self.strategy == 'prompt':
+
+        elif self.strategy == "generation" or self.strategy == "prompt":
             dataset = load_dataset(
                 "json",
                 data_files={
@@ -507,7 +509,7 @@ class LlamaModel(object):
                 # remove_unused_columns=False,
                 label_names=["labels"],
                 load_best_model_at_end=True,
-                metric_for_best_model="rmse"
+                metric_for_best_model="loss"
                 if self.task_type == "regression"
                 else "accuracy",
                 ddp_find_unused_parameters=False if self.ddp else None,
@@ -687,13 +689,17 @@ class LlamaModel(object):
         print("evaluate begin...")
         for idx, single_test in enumerate(tqdm(self.test_data)):
             single_prompt = self.prompter.generate_prompt(
-                instruction=single_test["instruction"] if self.strategy == 'generation' else None,
+                instruction=single_test["instruction"]
+                if self.strategy == "generation"
+                else None,
                 input=single_test["input"],
             )
             result = self.single_prompt_evaluate(single_prompt)
             output = result_translator(self.topic, result, translator)
             prediction = np.append(prediction, output)
-            label = result_translator(self.topic, single_test["output"], translator)
+            label = result_translator(
+                self.topic, single_test["output"], translator
+            )
             true = np.append(true, label)
             print(f"result:{result}\noutput:{output}\nlabel:{label}")
 

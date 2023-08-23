@@ -12,6 +12,6 @@
 
 module purge
 module load anaconda3/2023.3
-conda activate Alpaca
+conda activate llm
 
-python run.py --topic 'abortion' --do_train --strategy prompt --model_type llama-2-13b
+python run.py --topic 'abortion' --do_eval --model_type 'llama-2-7b' --eval_model_path '/scratch/network/yh6580/output/sequence/llama-2-7b/abortion/regression/checkpoint-450'
