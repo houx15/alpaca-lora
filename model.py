@@ -199,10 +199,8 @@ class LlamaModel(object):
         )
         self.tokenizer.padding_side = "left"  # Allow batched inference
 
-        if strategy == "generation" or strategy == "prompt":
+        if strategy in ["generation", "prompt"]:
             self.prompter = Prompter(prompt_template_name)
-        elif strategy == "prompt":
-            self.prompter = Prompter("prompt-tuning")
 
         self.data_loader(data_path)
 
@@ -255,19 +253,28 @@ class LlamaModel(object):
                 model = PeftModel.from_pretrained(
                     model,
                     self.peft_weights,
-                    # torch_dtype=torch.float16,
+                    torch_dtype=torch.float16,
                     is_trainable=True
                     if self.strategy == "sequence"
                     else False,
                 )
             else:
                 if self.strategy == "prompt":
+                    with open(
+                        os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            "configs/prompt_design.json",
+                        ),
+                        "r",
+                        encoding="utf8",
+                    ) as rfile:
+                        prompt_dict = json.loads(rfile.read())
+                        prompt = prompt_dict[self.topic]
                     config = PromptTuningConfig(
                         task_type=TaskType.CAUSAL_LM,
                         prompt_tuning_init=PromptTuningInit.TEXT,
                         num_virtual_tokens=30,
-                        prompt_tuning_init_text="Analyze a tweet's opinion on abortion and give an answer from the following choices: irrelevant or no opinion on abortion, strongly believe abortion should be illegal, slightly believe abortion should be illegal, neutral to abortion rights/restrictions, slightly believe abortion should be legal, strongly believe abortion should be legal.",
-                        # prompt_tuning_init_text="Analyze a tweet's opinion on abortion and give an answer from the following choices: irrelevant, highly illegal, slightly illegal, neutral, slightly legal, highly legal",
+                        prompt_tuning_init_text=prompt,
                         tokenizer_name_or_path=self.base_model,
                     )
                 elif self.strategy in ["generation", "sequence"]:
