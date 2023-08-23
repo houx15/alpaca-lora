@@ -50,13 +50,12 @@ class TrainingPara(object):
     num_epochs: int = 3
     learning_rate: float = 3e-4
     cutoff_len: int = 256
-    val_set_size: int = 200
     lora_r: int = 8
     lora_alpha: int = 16
     lora_dropout: float = 0.05
     lora_target_modules: List[str] = ["q_proj", "v_proj"]
     train_on_inputs: bool = False  # if False, masks out inputs in loss
-    add_eos_token: bool = False
+    add_eos_token: bool = True
     group_by_length: bool = (
         False  # faster, but produces an odd training loss curve
     )
@@ -133,6 +132,9 @@ class LlamaModel(object):
         self.output_dir = output_dir
         self.log_dir = log_dir
 
+        if self.strategy == "prompt":
+            prompt_template_name = "prompt-tuning"
+
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
@@ -141,7 +143,7 @@ class LlamaModel(object):
 
         if int(os.environ.get("LOCAL_RANK", 0)) == 0:
             print(
-                f"Training Alpaca-LoRA model with params:\n"
+                f"\nTraining model with params:\n"
                 f"base_model: {base_model}\n"
                 f"data_path: {data_path}\n"
                 f"output_dir: {output_dir}\n"
@@ -150,11 +152,6 @@ class LlamaModel(object):
                 f"num_epochs: {self.config.num_epochs}\n"
                 f"learning_rate: {self.config.learning_rate}\n"
                 f"cutoff_len: {self.config.cutoff_len}\n"
-                f"val_set_size: {self.config.val_set_size}\n"
-                f"lora_r: {self.config.lora_r}\n"
-                f"lora_alpha: {self.config.lora_alpha}\n"
-                f"lora_dropout: {self.config.lora_dropout}\n"
-                f"lora_target_modules: {self.config.lora_target_modules}\n"
                 f"train_on_inputs: {self.config.train_on_inputs}\n"
                 f"add_eos_token: {self.config.add_eos_token}\n"
                 f"group_by_length: {self.config.group_by_length}\n"
@@ -165,6 +162,13 @@ class LlamaModel(object):
                 f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
                 f"prompt template: {prompt_template_name}\n"
             )
+            if self.strategy != "prompt":
+                print(
+                    f"lora_r: {self.config.lora_r}\n"
+                    f"lora_alpha: {self.config.lora_alpha}\n"
+                    f"lora_dropout: {self.config.lora_dropout}\n"
+                    f"lora_target_modules: {self.config.lora_target_modules}\n"
+                )
         assert (
             base_model
         ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
@@ -195,7 +199,7 @@ class LlamaModel(object):
         )
         self.tokenizer.padding_side = "left"  # Allow batched inference
 
-        if strategy == "generation":
+        if strategy == "generation" or strategy == "prompt":
             self.prompter = Prompter(prompt_template_name)
         elif strategy == "prompt":
             self.prompter = Prompter("prompt-tuning")
@@ -247,11 +251,14 @@ class LlamaModel(object):
 
         if self.peft:
             if self.peft_weights is not None:
+                print("Peft weight file path:", self.peft_weights)
                 model = PeftModel.from_pretrained(
                     model,
                     self.peft_weights,
-                    torch_dtype=torch.float16,
-                    is_trainable=True,
+                    # torch_dtype=torch.float16,
+                    is_trainable=True
+                    if self.strategy == "sequence"
+                    else False,
                 )
             else:
                 if self.strategy == "prompt":
@@ -330,7 +337,9 @@ class LlamaModel(object):
         )
         labels = self.tokenizer(targets)
         input_ids = model_input["input_ids"]
-        label_input_ids = labels["input_ids"] + [self.tokenizer.eos_token_id]
+        label_input_ids = labels["input_ids"]
+        if self.config.add_eos_token:
+            label_input_ids += [self.tokenizer.eos_token_id]
         model_input["input_ids"] = input_ids + label_input_ids
         if not self.config.train_on_inputs:
             model_input["labels"] = [-100] * len(input_ids) + label_input_ids
@@ -339,7 +348,7 @@ class LlamaModel(object):
         model_input["attention_mask"] = [1] * len(model_input["input_ids"])
         return model_input
 
-    def sequence_tokenizer(self, data_point, add_eos_token=True):
+    def sequence_tokenizer(self, data_point):
         text = sentence_cleaner(data_point["text"])
 
         result = self.tokenizer(
@@ -352,7 +361,7 @@ class LlamaModel(object):
         if (
             result["input_ids"][-1] != self.tokenizer.eos_token_id
             and len(result["input_ids"]) < self.config.cutoff_len
-            and add_eos_token
+            and self.config.add_eos_token
         ):
             result["input_ids"].append(self.tokenizer.eos_token_id)
             result["attention_mask"].append(1)
@@ -412,6 +421,9 @@ class LlamaModel(object):
                 .shuffle()
                 .map(self.generate_and_tokenize_prompt)
             )
+        print(
+            f"\nFinish loading data: there are {len(self.train_data)} train data, {len(self.validate_data)} validation data, {len(self.test_data)} test data."
+        )
 
     def binary_metrics_compute(self, pred):
         labels = pred.label_ids
@@ -487,6 +499,15 @@ class LlamaModel(object):
 
     def train(self, parameter_search: bool = False):
         self.model.train()
+
+        metric_for_best_model = ""
+        if self.strategy == "sequence":
+            metric_for_best_model = (
+                "accuracy" if self.task_type == "binary" else "rmse"
+            )
+        else:
+            metric_for_best_model = "loss"
+
         self.trainer = transformers.Trainer(
             model=self.model,
             train_dataset=self.train_data,
@@ -509,9 +530,7 @@ class LlamaModel(object):
                 # remove_unused_columns=False,
                 label_names=["labels"],
                 load_best_model_at_end=True,
-                metric_for_best_model="loss"
-                if self.task_type == "regression"
-                else "accuracy",
+                metric_for_best_model=metric_for_best_model,
                 ddp_find_unused_parameters=False if self.ddp else None,
                 group_by_length=False,
                 # report_to="wandb",
@@ -532,10 +551,11 @@ class LlamaModel(object):
         )
 
         if self.strategy == "sequence":
-            if self.task_type == "binary":
-                self.trainer.compute_metrics = self.binary_metrics_compute
-            else:
-                self.trainer.compute_metrics = self.regression_metrics_compute
+            self.trainer.compute_metrics = (
+                self.binary_metrics_compute
+                if self.task_type == "binary"
+                else self.regression_metrics_compute
+            )
 
         # self.model.config.use_cache = False
         # old_state_dict = self.model.state_dict
@@ -604,7 +624,6 @@ class LlamaModel(object):
             if self.task_type == "regression"
             else self.binary_metrics_compute,
         )
-        print(self.test_data)
 
         # if torch.__version__ >= "2" and sys.platform != "win32":
         #     self.model = torch.compile(self.model)
@@ -666,12 +685,10 @@ class LlamaModel(object):
                 max_new_tokens=max_new_tokens,
             )
         s = generation_output.sequences[0]
-        output = self.tokenizer.decode(s)
-        # return output.split("### Response:")[-1].strip()
-
+        output = self.tokenizer.decode(s, skip_special_tokens=True)
         return self.prompter.get_response(output)
 
-    def generatifon_eval(self):
+    def generation_eval(self):
         self.model.eval()
         with open(
             os.path.join(
@@ -687,7 +704,7 @@ class LlamaModel(object):
         prediction = np.array([])
         true = np.array([])
         print("evaluate begin...")
-        for idx, single_test in enumerate(tqdm(self.test_data)):
+        for single_test in tqdm(self.test_data):
             single_prompt = self.prompter.generate_prompt(
                 instruction=single_test["instruction"]
                 if self.strategy == "generation"
@@ -701,7 +718,9 @@ class LlamaModel(object):
                 self.topic, single_test["output"], translator
             )
             true = np.append(true, label)
-            print(f"result:{result}\noutput:{output}\nlabel:{label}")
+            print(
+                f"result: {single_prompt}{result}\noutput: {output}\nlabel: {label}\n"
+            )
 
         acc = accuracy_score(true, prediction)
         data = pd.DataFrame(data={"predict": prediction, "true": true})
@@ -724,7 +743,7 @@ class LlamaModel(object):
             relevant_data.predict.values,
             squared=False,
         )
-        for index, row in relevant_data.iterrows():
+        for _, row in relevant_data.iterrows():
             preds_set = self.error_analysis.get(row["true"], np.array(0))
             preds_set = np.append(preds_set, row["predict"])
             self.error_analysis[row["true"]] = preds_set
