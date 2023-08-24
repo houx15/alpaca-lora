@@ -310,19 +310,19 @@ class LlamaModel(object):
                 else:
                     print(f"Checkpoint {checkpoint_name} not found")
 
+            model.config.use_cache = False
+            old_state_dict = model.state_dict
+            model.state_dict = (
+                lambda self, *_, **__: get_peft_model_state_dict(
+                    self, old_state_dict()
+                )
+            ).__get__(model, type(model))
+
             model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
         if not self.ddp and torch.cuda.device_count() > 1:
             model.is_parallelizable = True
             model.model_parallel = True
-
-        model.config.use_cache = False
-        old_state_dict = model.state_dict
-        model.state_dict = (
-            lambda self, *_, **__: get_peft_model_state_dict(
-                self, old_state_dict()
-            )
-        ).__get__(model, type(model))
 
         self.model = model
         return model

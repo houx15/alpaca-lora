@@ -46,6 +46,7 @@ def run(
     output_dir: str = None,
     log_dir: str = None,
     data_path: str = None,
+    resume_from_checkpoint: str = None,
 ):
     """
     Entry of the project.
@@ -128,6 +129,7 @@ def run(
         peft_weights=peft_weights if use_pretrained_peft_weights else None,
         output_dir=output_dir,
         log_dir=log_dir,
+        resume_from_checkpoint=resume_from_checkpoint,
     )
 
     if do_train:
