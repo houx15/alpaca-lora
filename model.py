@@ -91,6 +91,7 @@ class LlamaModel(object):
         peft: bool = True,
         peft_weights: str = None,
         device_map="auto",
+        hp_space_optuna=None,
         # TODO wandb params, unable to use as the GPU cannot access to internet
         # wandb_project: str = "",
         # wandb_run_name: str = "",
@@ -110,6 +111,7 @@ class LlamaModel(object):
         self.device_map = device_map
         self.resume_from_checkpoint = resume_from_checkpoint
         self.error_analysis = {}
+        self.hp_space_optuna = hp_space_optuna
 
         if data_path is None:
             data_path = (
@@ -580,9 +582,15 @@ class LlamaModel(object):
         if parameter_search:
             import optuna
 
+            hp_space = (
+                self.hp_space_optuna
+                if self.hp_space_optuna is not None
+                else self.default_hp_space_optuna
+            )
+
             self.trainer.model_init = self.model_init
             best_run = self.trainer.hyperparameter_search(
-                hp_space=lambda x: self.default_hp_space_optuna(x),
+                hp_space=lambda x: hp_space(x),
                 backend="optuna",
                 direction="minimize"
                 if self.task_type == "regression"

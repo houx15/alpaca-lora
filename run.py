@@ -91,6 +91,10 @@ def run(
     if hasattr(config_module, "augment_args"):
         augment_args = config_module.augment_args
 
+    hp_space_optuna = None
+    if hasattr(config_module, "hp_space_optuna"):
+        hp_space_optuna = config_module.hp_space_optuna
+
     undersampling_strategy = None
     if hasattr(config_module, "undersampling_strategy"):
         undersampling_strategy = config_module.undersampling_strategy
@@ -130,6 +134,7 @@ def run(
         output_dir=output_dir,
         log_dir=log_dir,
         resume_from_checkpoint=resume_from_checkpoint,
+        hp_space_optuna=hp_space_optuna,
     )
 
     if do_train:
