@@ -290,6 +290,7 @@ class LlamaModel(object):
                     )
                 model = get_peft_model(model, config)
 
+            print(self.resume_from_checkpoint)
             if self.resume_from_checkpoint:
                 # Check the available weights and load them
                 checkpoint_name = os.path.join(
@@ -303,6 +304,7 @@ class LlamaModel(object):
                         False  # So the trainer won't try loading its state
                     )
                 # The two files above have a different name depending on how they were saved, but are actually the same.
+                print(checkpoint_name)
                 if os.path.exists(checkpoint_name):
                     print(f"Restarting from {checkpoint_name}")
                     adapters_weights = torch.load(checkpoint_name)
