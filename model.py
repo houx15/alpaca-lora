@@ -315,12 +315,12 @@ class LlamaModel(object):
                     print(f"Checkpoint {checkpoint_name} not found")
 
             model.config.use_cache = False
-            old_state_dict = model.state_dict
-            model.state_dict = (
-                lambda self, *_, **__: get_peft_model_state_dict(
-                    self, old_state_dict()
-                )
-            ).__get__(model, type(model))
+            # old_state_dict = model.state_dict
+            # model.state_dict = (
+            #     lambda self, *_, **__: get_peft_model_state_dict(
+            #         self, old_state_dict()
+            #     )
+            # ).__get__(model, type(model))
 
             model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
