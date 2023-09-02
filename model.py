@@ -64,6 +64,7 @@ class TrainingPara(object):
     logging_steps: int = 50
     eval_steps: int = 50
     save_steps: int = 50
+    modules_to_save: list = None
 
     def __init__(self, param_dict: dict = {}):
         for key, value in param_dict.items():
@@ -209,6 +210,7 @@ class LlamaModel(object):
     def model_init(
         self,
     ):
+        torch.manual_seed(42)
         if self.strategy not in ["sequence", "generation", "prompt"]:
             raise NotImplementedError(
                 f"strategy type {self.strategy} not implemented"
@@ -256,9 +258,7 @@ class LlamaModel(object):
                     model,
                     self.peft_weights,
                     torch_dtype=torch.float16,
-                    is_trainable=True
-                    if self.strategy == "sequence"
-                    else False,
+                    is_trainable=False,
                 )
             else:
                 if self.strategy == "prompt":
@@ -289,6 +289,7 @@ class LlamaModel(object):
                         task_type=TaskType.SEQ_CLS
                         if self.strategy == "sequence"
                         else TaskType.CAUSAL_LM,
+                        modules_to_save=["norm", "score", "classifier"],
                     )
                 model = get_peft_model(model, config)
 
@@ -314,7 +315,10 @@ class LlamaModel(object):
                 else:
                     print(f"Checkpoint {checkpoint_name} not found")
 
-            model.config.use_cache = False
+            # if self.peft_weights:
+            #     model.config.use_cache = True
+            # else:
+            #     model.config.use_cache = False
             # old_state_dict = model.state_dict
             # model.state_dict = (
             #     lambda self, *_, **__: get_peft_model_state_dict(
@@ -529,7 +533,7 @@ class LlamaModel(object):
                 warmup_steps=self.config.warmup_steps,
                 num_train_epochs=self.config.num_epochs,
                 learning_rate=self.config.learning_rate,
-                fp16=True,
+                # fp16=False,
                 logging_steps=self.config.logging_steps,
                 optim=self.config.optim,
                 evaluation_strategy="steps",
@@ -540,7 +544,7 @@ class LlamaModel(object):
                 save_total_limit=3,
                 # remove_unused_columns=False,
                 label_names=["labels"],
-                load_best_model_at_end=True,
+                load_best_model_at_end=False,
                 metric_for_best_model=metric_for_best_model,
                 ddp_find_unused_parameters=False if self.ddp else None,
                 group_by_length=False,
@@ -621,7 +625,7 @@ class LlamaModel(object):
                 # report_to="wandb",
                 # run_name=wandb_run_name if use_wandb else None,
                 logging_dir=self.log_dir,
-                fp16=True,
+                fp16=False,
                 optim=self.config.optim,
                 ddp_find_unused_parameters=False if self.ddp else None,
                 group_by_length=False

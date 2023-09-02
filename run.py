@@ -140,6 +140,10 @@ def run(
     if do_train:
         model.train(parameter_search=parameter_search)
         model.eval()
+        # used for test
+        # model.peft_weights = output_dir
+        # model.model_init()
+        # model.eval()
     elif do_eval:
         model.eval()
 
