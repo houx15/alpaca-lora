@@ -67,9 +67,7 @@ class OpinionPredict(object):
             model_base,
             num_labels=1 if self.task_type == "regression" else 2,
             load_in_8bit=True,
-            torch_dtype=torch.float16
-            if self.task_type == "regression"
-            else torch.int8,
+            torch_dtype=torch.float16,
             device_map="auto",
         )
         model = prepare_model_for_kbit_training(model)
@@ -133,13 +131,13 @@ class OpinionPredict(object):
 
 if __name__ == "__main__":
     a = OpinionPredict(
-        task_type="regression",
-        model_path="/scratch/network/yh6580/output/sequence/llama-2-13b/abortion/regression/saved0902",
+        task_type="binary",
+        model_path="/scratch/network/yh6580/output/sequence/llama-2-13b/abortion/binary/checkpoint-2250",
     )
     import pandas as pd
 
-    data = pd.read_csv("dataset/abortion/test-regression.csv")
+    data = pd.read_csv("dataset/abortion/test-binary.csv")
     texts = data["text"].values
 
-    result = a.predict(texts=texts, batch=32)
+    result = a.predict(texts=texts, batch=8)
     print(result)

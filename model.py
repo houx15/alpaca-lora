@@ -232,9 +232,7 @@ class LlamaModel(object):
                 self.base_model,
                 num_labels=1 if self.task_type == "regression" else 2,
                 load_in_8bit=self.load_8bit,
-                torch_dtype=torch.float16
-                if self.task_type == "regression"
-                else torch.int8,
+                torch_dtype=torch.float16,
                 device_map=self.device_map,
             )
         elif self.strategy == "generation" or self.strategy == "prompt":
@@ -381,7 +379,10 @@ class LlamaModel(object):
             result["input_ids"].append(self.tokenizer.eos_token_id)
             result["attention_mask"].append(1)
 
-        result["labels"] = float(data_point["label"])
+        if self.task_type == "regression":
+            result["labels"] = float(data_point["label"])
+        else:
+            result["labels"] = int(data_point["label"])
 
         return result
 
