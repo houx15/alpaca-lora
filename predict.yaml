@@ -1,0 +1,13 @@
+name: llm
+channels:
+  - defaults
+dependencies:
+  - python=3.9.17=h955ad1f_0
+  - pip:
+      - bitsandbytes==0.41.1
+      - numpy==1.22.4
+      - pandas==1.5.3
+      - peft==0.5.0
+      - scipy==1.11.1
+      - torch==2.0.1
+      - transformers==4.30.1
