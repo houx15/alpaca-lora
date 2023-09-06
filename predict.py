@@ -87,6 +87,29 @@ class OpinionPredict(object):
         batch: int = 64,
         verbose=print,
     ) -> np.array:
+        """
+        :param texts: list (or numpy.array, pandas.Series, torch.tensor) of strings.
+        :param padding: str. 'longest' (default), 'max_length', 'do_not_pad'.
+        :param max_length, batch: int. max length of tweet and number of tweets proceeded in a batch. limited by GPU memory.
+            max_length=128 is sufficient for most tweets, and 512 tweeets per batch are recommended for 128-letter tweets on a typical Tesla GPU with 16GB memory.
+            :param verbose: function that accepts string input. used to display message.
+            e.g., verbose = print (default, display on screen)
+            e.g., verbose = logger.info (write to a log file)
+            e.g., verbose = lambda message: logger.info(f'filename: {message}') # write to a log file with a header
+        :return: 1-dim numpy array
+        :example:
+            >>> from predict import OpinionPredict
+            >>> OpinionPredict(task_type='regression', model_path='../model-llama2/2023-09-04-yuxin-llama2-abortion-regression-090'
+            ).predict(texts=[
+                "RT After the shooting, Jim and his wife Sarah dedicated their lives to preventing gun violence. They were lifelong Republicans and gun owners themselves. They realized that passing sensible gun laws isn't about politics; it's about saving lives. #GunReform ",
+                'Did u hear the gunshot in the video, when someone is rushing you and u hear a gunshot, they could have a gun so u shoot them. Someone else fired a gun.',
+                "It didn't though. You can literally 3d print a gun now anyways, no use in banning them. Also that's a one way ticket to all out civil war",
+                'I repeat, the 2nd amendment is not on trial here. Kyle did not engage, others engaged him. You are allowed to eliminate as many threats as is necessary to preserve your own life. There is no limit after which the right to your own life becomes inferior to that of your attackers.'
+            ])
+
+            output: array([ 1.7457896 ,  1.0045699 ,  0.07550862, -0.76812345], dtype=float32)
+            ground truth: [2, 1, 0, -1]
+        """
         verbose(
             f"predict(texts={len(texts)}), max_length={max_length}, batch={batch}"
         )
