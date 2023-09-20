@@ -37,4 +37,14 @@ trainin_args = {
         "learning_rate": 3e-4,
         "cutoff_len": 256,
     },
+    "prompt-llama-2-13b-chat-regression": {
+        "batch_size": 32,
+        "micro_batch_size": 16,
+        "num_epochs": 30,
+        "learning_rate": 1e-3,
+        "cutoff_len": 256,
+        "logging_steps": 20,
+        "eval_steps": 20,
+        "save_steps": 40,
+    },
 }
