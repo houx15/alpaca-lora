@@ -106,3 +106,14 @@ texts = data["text"].values # a numpy-array (n*1) of texts
 
 result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float numbers.
 ```
+
+
+### Performance
+
+| Topic | BERT-Binary | BERT-Regression | Llama2-13b-Binary | Llama2-13b-Regression | Alpaca-7b-Binary | Alpaca-7b-Regression | Alpaca-13b-Binary | Alpaca-13b-Regression |
+|---|---|---|---|---|---|---|---|---|
+|Gun Control|88%|0.97|87%|0.98|||||
+|Climate Change||1.01|94.73%|0.86|||||
+|China favorability|89%|0.85|85.6%|0.82|||||
+|Abortion|92%|0.98|95%|0.90|||96.71%|0.88|
+|Sexual orientation|92%|0.69|92%||||||
