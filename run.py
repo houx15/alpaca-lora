@@ -99,6 +99,10 @@ def run(
     if hasattr(config_module, "undersampling_strategy"):
         undersampling_strategy = config_module.undersampling_strategy
 
+    oversample_files = []
+    if hasattr(config_module, "OVERSAMPLE_FILES"):
+        oversample_files = config_module.OVERSAMPLE_FILES
+
     data_process = DataProcess(
         config_module.DATASET_DIR,
         dataset_files=config_module.DATASET_FILES,
@@ -109,6 +113,7 @@ def run(
         augment_args=augment_args,
         labeller=labeller,
         undersampling_strategy=undersampling_strategy,
+        oversample_files=oversample_files,
     )
 
     train_df, validate_df, test_df, total_df = data_process.get_dataset()

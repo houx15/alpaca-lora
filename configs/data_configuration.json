@@ -364,9 +364,33 @@
             }
         }
     },
-    "2023-03-04-climate-change-aggregated": {
+    "2023-09-20-climate-change-aggregated": {
         "text": "text",
-        "label": "allan",
+        "label": "label-mg",
+        "label_strategy": {
+            "binary": {
+                "irrelevant or no opinion on climate change": 0,
+                "strongly agree with climate change": 1,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 1,
+                "slightly disagree with climate change": 1,
+                "strongly disagree with climate change": 1,
+                "review with junming": "skip"
+            },
+            "regression": {
+                "irrelevant or no opinion on climate change": "skip",
+                "strongly agree with climate change": 2,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 0,
+                "slightly disagree with climate change": -1,
+                "strongly disagree with climate change": -2,
+                "review with junming": "skip"
+            }
+        }
+    },
+    "2023-09-20-climate-change-aggregated-oversample": {
+        "text": "text",
+        "label": "label-mg",
         "label_strategy": {
             "binary": {
                 "irrelevant or no opinion on climate change": 0,

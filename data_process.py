@@ -27,6 +27,7 @@ class DataProcess(object):
         augment_args: dict = None,
         labeller: str = None,
         undersampling_strategy: dict = None,
+        oversample_files: list = [],
     ) -> None:
         """
         dataset_dir: str, path of dataset directory
@@ -54,6 +55,7 @@ class DataProcess(object):
         self.split_ratio = split_ratio
         self.labeller = labeller
         self.undersampling_strategy = undersampling_strategy
+        self.oversample_files = oversample_files
 
         with open(
             os.path.join(
@@ -261,12 +263,18 @@ class DataProcess(object):
 
         if train_df is None:
             df_list = []
+            train_only_list = []
             for single_file in self.dataset_files:
                 single_df = self.single_file_handler(single_file)
-                df_list.append(single_df)
+                if single_file not in self.oversample_files:
+                    df_list.append(single_df)
+                else:
+                    train_only_list.append(single_df)
 
             dataset_df = pd.concat(df_list)
             train_df, validate_df, test_df = self.split_df_by_label(dataset_df)
+            train_only_list.append(train_df)
+            train_df = pd.concat(train_only_list)
         if self.undersampling_strategy:
             train_df = self.undersampling(
                 train_df, self.undersampling_strategy
