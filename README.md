@@ -4,6 +4,8 @@ This repository contains code for training models to analyze a tweet's opinion o
 
 To fine-tune cheaply and efficiently, we use [low-rank adaptation (LoRA)](https://arxiv.org/pdf/2106.09685.pdf) with Hugging Face's [PEFT](https://github.com/huggingface/peft) as well as Tim Dettmers' [bitsandbytes](https://github.com/TimDettmers/bitsandbytes).
 
+## Usage
+
 ### Local Setup
 
 1. Install dependencies
@@ -108,9 +110,9 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 ```
 
 
-### Performance
+## Performance
 
-#### 1. Sequence Classification
+### 1. Sequence Classification
 
 | Topic | BERT-Binary | BERT-Regression | Llama2-13b-Binary | Llama2-13b-Regression | Alpaca-7b-Binary | Alpaca-7b-Regression | Alpaca-13b-Binary | Alpaca-13b-Regression |
 |---|---|---|---|---|---|---|---|---|
@@ -121,7 +123,9 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 |Sexual orientation|92%|0.69|92%||||||
 
 
-### Data Information
+## Technique Details
+
+### Data Description
 
 #### 1. Regression
 |Topic | Labeller | Cohen's Kappa | Other |
@@ -140,3 +144,5 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 |China favorability||||
 |Abortion||||
 |Sexual orientation||||
+
+### Work Flow
