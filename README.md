@@ -110,6 +110,8 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 
 ### Performance
 
+#### 1. Sequence Classification
+
 | Topic | BERT-Binary | BERT-Regression | Llama2-13b-Binary | Llama2-13b-Regression | Alpaca-7b-Binary | Alpaca-7b-Regression | Alpaca-13b-Binary | Alpaca-13b-Regression |
 |---|---|---|---|---|---|---|---|---|
 |Gun Control|88%|0.97|87%|0.98|||||
@@ -117,3 +119,24 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 |China favorability|89%|0.85|85.6%|0.82|||||
 |Abortion|92%|0.98|95%|0.90|||96.71%|0.88|
 |Sexual orientation|92%|0.69|92%||||||
+
+
+### Data Information
+
+#### 1. Regression
+|Topic | Labeller | Cohen's Kappa | Other |
+|---|---|---|---|
+|Gun Control||||
+|Climate Change||||
+|China favorability||||
+|Abortion||||
+|Sexual orientation||||
+
+#### 2. Binary
+|Topic | Labeller | Cohen's Kappa | Other |
+|---|---|---|---|
+|Gun Control||||
+|Climate Change||||
+|China favorability||||
+|Abortion||||
+|Sexual orientation||||
