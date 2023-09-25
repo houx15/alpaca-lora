@@ -74,5 +74,5 @@ if __name__ == "__main__":
 
     # evaluator = DataGen(topic=config.topic, output_dir=config.output_dir)
 
-    for topic in ['gun', 'abortion', 'drug', 'climate', 'sexual']:
+    for topic in ['gun', 'abortion', 'drug', 'climate', 'sexual', "china"]:
         generator = DataGen(topic=topic, output_dir=f'json/{topic}')
