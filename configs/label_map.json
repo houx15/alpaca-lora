@@ -33,12 +33,12 @@
     },
     "climate": {
         "labels": {
-            "strongly disagree with climate change": -2,
-            "slightly disagree with climate change": -1,
-            "neutral to climate change": 0,
-            "slightly agree with climate change": 1,
-            "strongly agree with climate change": 2,
-            "irrelevant or no opinion on climate change": -9
+            "strongly disregard the danger of climate change": -2,
+            "slightly disregard the danger of climate change": -1,
+            "neutral to the danger of climate change": 0,
+            "slightly recognize the danger of climate change": 1,
+            "strongly recognize the danger of climate change": 2,
+            "irrelevant or no opinion on the danger of climate change": -9
         },
         "splitters": ["change"]
     },

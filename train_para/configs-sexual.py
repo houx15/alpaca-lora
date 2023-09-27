@@ -19,13 +19,13 @@ trainin_args = {
         "cutoff_len": 256,
     },
     "generation-llama-2-13b-chat-regression": {
-        "batch_size": 64,
+        "batch_size": 32,
         "micro_batch_size": 32,
-        "num_epochs": 15,
-        "learning_rate": 1e-2,
+        "num_epochs": 30,
+        "learning_rate": 3e-2,
         "cutoff_len": 256,
-        "logging_steps": 10,
-        "eval_steps": 40,
+        "logging_steps": 20,
+        "eval_steps": 20,
         "save_steps": 40,
     },
 }

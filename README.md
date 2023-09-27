@@ -142,7 +142,7 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 | China Favoribility | 0.837 |
 | Abortion | 0.628 | 
 | Sexual Orientation | 0.808 |
-| Drug | |
+| Drug | 0.946 |
 
 ## Technique Details
 

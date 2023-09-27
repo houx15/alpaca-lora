@@ -47,4 +47,14 @@ trainin_args = {
         "eval_steps": 20,
         "save_steps": 40,
     },
+    "generation-llama-2-13b-chat-regression": {
+        "batch_size": 64,
+        "micro_batch_size": 32,
+        "num_epochs": 30,
+        "learning_rate": 3e-2,
+        "cutoff_len": 256,
+        "logging_steps": 20,
+        "eval_steps": 20,
+        "save_steps": 40,
+    },
 }
