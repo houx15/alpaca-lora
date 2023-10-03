@@ -1,8 +1,12 @@
 {
-    "gun": "Analyze a tweet's opinion on gun control and give me an answer directly from the following choices: irrelevant or no opinion on gun rights/control, strongly support gun rights, slightly support gun rights, neutral to gun rights/control, slightly support strict gun control, strongly support strict gun control.",
-    "abortion": "Analyze a tweet's opinion on abortion and give an answer directly from the following choices: strongly believe abortion should be illegal, slightly believe abortion should be illegal, neutral to abortion rights/restrictions, slightly believe abortion should be legal, strongly believe abortion should be legal.",
-    "climate": "Analyze a tweet's opinion on climate change and give me an answer directly from the following choices: neutral to the danger of climate change, strongly recognize the danger of climate change, slightly recognize the danger of climate change, neutral to the danger of climate change, slightly disregard the danger of climate change, strongly disregard the danger of climate change.",
-    "drug": "Analyze a tweet's opinion on drug legalization and give me an answer directly from the following choices: irrelevant or no opinion on drug legalization, strongly support prohibition, slightly support prohibition, neutral to drug legalization (decriminalized but not encouraged), slightly support legalization, strongly support legalization.",
-    "sexual": "Analyze a tweet's opinion on sexual orientation and give me an answer directly from the following choices: irrelevant or no opinion on lgbt+ rights/issues, strongly conservative on lgbt+ issues, slightly conservative on lgbt+ issues, neutral to lgbt+ rights/issues, slightly support lgbt+ rights, strongly support lgbt+ rights.",
-    "china": ""
+    "full_name": {
+        "gun": "gun control",
+        "abortion": "abortion",
+        "climate": "climate change",
+        "drug": "drug legalization",
+        "sexual": "sexual orientation",
+        "china": "china"
+    },
+    "regression": "Analyze this tweet's opinion on {full_name} and output its attitude given the following choices: {labels}.",
+    "binary": "Judge whether this tweet is pertinent to {full_name} or not, and output one of these two choices: relevant to {full_name}, irrelevant to {full_name}."
 }

@@ -127,11 +127,10 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 | Topic | Llama2-13b-chat-Regression |
 | --- | --- |
 | Gun Control | 0.745 |
-| Climate Change | |
+| Climate Change |   |
 | China Favoribility | |
 | Abortion | | 
 | Sexual Orientation | |
-| Drug | 0.726 |
 
 ### 3. Prompt Tuning
 
@@ -142,7 +141,6 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 | China Favoribility | 0.837 |
 | Abortion | 0.628 | 
 | Sexual Orientation | 0.808 |
-| Drug | 0.946 |
 
 ## Technique Details
 

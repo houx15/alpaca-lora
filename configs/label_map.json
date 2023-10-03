@@ -6,7 +6,7 @@
             "neutral to gun rights/control": 0,
             "slightly support strict gun control": 1,
             "strongly support strict gun control": 2,
-            "irrelevant or no opinion on gun rights/control": -9
+            "irrelevant to gun rights/control": -9
         },
         "splitters": ["control", "rights"]
     },
@@ -17,7 +17,7 @@
             "neutral to abortion rights/restrictions": 0,
             "slightly believe abortion should be legal": 1,
             "strongly believe abortion should be legal": 2,
-            "irrelevant or no opinion on abortion": -9
+            "irrelevant to abortion": -9
         },
         "splitters": ["legal", "illegal", "restrictions"]
     },
@@ -38,7 +38,7 @@
             "neutral to the danger of climate change": 0,
             "slightly recognize the danger of climate change": 1,
             "strongly recognize the danger of climate change": 2,
-            "irrelevant or no opinion on the danger of climate change": -9
+            "irrelevant to climate change": -9
         },
         "splitters": ["change"]
     },
@@ -49,18 +49,18 @@
             "neutral to drug legalization (decriminalized but not encouraged)": 0,
             "slightly support legalization": 1,
             "strongly support legalization": 2,
-            "irrelevant or no opinion on drug legalization": -9
+            "irrelevant to drug legalization": -9
         },
         "splitters": ["legalization", "prohibition"]
     },
     "sexual": {
         "labels": {
-            "irrelevant or no opinion on lgbt+ rights/issues": -9,
             "strongly conservative on lgbt+ issues": 2,
             "slightly conservative on lgbt+ issues": 1,
             "neutral to lgbt+ rights/issues": 0,
             "slightly support lgbt+ rights": -1,
-            "strongly support lgbt+ rights": -2
+            "strongly support lgbt+ rights": -2,
+            "irrelevant to lgbt+ rights/issues": -9
         }
     }
 }

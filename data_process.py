@@ -5,6 +5,7 @@ date: 2022-06-16
 
 import pandas as pd
 import json
+import os
 
 from utils.augment import dataset_augmentation
 from sklearn.model_selection import train_test_split
@@ -41,7 +42,6 @@ class DataProcess(object):
         #     "regression": "regression",
         #     "binary": "binary"
         # }
-        import os
 
         self.dataset_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), dataset_dir
@@ -76,7 +76,7 @@ class DataProcess(object):
             {
                 "text": "text",
                 "label": "label",
-                "label_strategy": {"binary": {}, "regression": {}},
+                "label_strategy": {"binary": {}, "regression": {}, "regression_with_relevance": {}},
             },
         )
         if self.labeller:
