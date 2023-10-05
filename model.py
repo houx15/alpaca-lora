@@ -715,10 +715,10 @@ class LlamaModel(object):
                 label=None,
             )
             result = self.single_prompt_evaluate(single_prompt)
-            output = result_translator(self.topic, result, translator)
+            output = result_translator(self.topic, result, translator, self.task_type)
             prediction = np.append(prediction, output)
             label = result_translator(
-                self.topic, single_test["output"], translator
+                self.topic, single_test["output"], translator, self.task_type
             )
             true = np.append(true, label)
             print(

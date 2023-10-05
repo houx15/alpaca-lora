@@ -91,4 +91,7 @@ if __name__ == "__main__":
 
     for topic in ['gun', 'abortion', 'drug', 'climate', 'sexual', "china"]:
         for task_type in ["binary", "regression", "regression_with_relevance"]:
-            generator = DataGen(topic=topic, task_type=task_type, output_dir=f'json/{topic}')
+            output_dir = f"json/{topic}"
+            if topic == "china":
+                output_dir += "/favoribility"
+            generator = DataGen(topic=topic, task_type=task_type, output_dir=output_dir)

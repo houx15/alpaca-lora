@@ -124,13 +124,13 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 
 ### 2. Fine Tuning With Hard Prompt
 
-| Topic | Llama2-13b-chat-Regression |
-| --- | --- |
-| Gun Control | 0.745 |
-| Climate Change | 0.664 |
-| China Favoribility | |
-| Abortion | | 
-| Sexual Orientation | |
+| Topic | Llama2-13b-chat-Binary | Llama2-13b-chat-Regression |
+| --- | --- | --- |
+| Gun Control | | 0.745 |
+| Climate Change | 100%  | 0.54 |
+| China Favoribility | | |
+| Abortion | 97.4% | 0.612 |
+| Sexual Orientation | | 0.724 |
 
 ### 3. Prompt Tuning
 
