@@ -23,13 +23,13 @@
     },
     "china": {
         "labels": {
-            "-2": -2,
-            "-1": -1,
-            "0": 0,
-            "1": 1,
-            "2": 2
+            "strongly dislike China": -2,
+            "slightly dislike China": -1,
+            "neutral to China": 0,
+            "slightly favor China": 1,
+            "strongly favor China": 2
         },
-        "splitters": []
+        "splitters": ["China"]
     },
     "climate": {
         "labels": {

@@ -142,6 +142,13 @@ class LlamaModel(object):
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
+        else:
+            for file_name in os.listdir(self.log_dir):
+                file_path = os.path.join(self.log_dir, file_name)
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
 
         if int(os.environ.get("LOCAL_RANK", 0)) == 0:
             print(
@@ -705,6 +712,7 @@ class LlamaModel(object):
             translator_dict = json.loads(rfile.read())
             translator = translator_dict[self.topic]
 
+        print(self.topic, translator)
         prediction = np.array([])
         true = np.array([])
         print("evaluate begin...")

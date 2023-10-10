@@ -93,5 +93,5 @@ if __name__ == "__main__":
         for task_type in ["binary", "regression", "regression_with_relevance"]:
             output_dir = f"json/{topic}"
             if topic == "china":
-                output_dir += "/favoribility"
+                output_dir += "/favorability"
             generator = DataGen(topic=topic, task_type=task_type, output_dir=output_dir)

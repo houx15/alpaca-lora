@@ -4,8 +4,8 @@
         "abortion": "abortion",
         "climate": "climate change",
         "drug": "drug legalization",
-        "sexual": "sexual orientation",
-        "china": "china"
+        "sexual": "attitudes torwards sexual orientation",
+        "china": "attitudes towards China"
     },
     "regression": "Analyze this tweet's opinion on {full_name} and output its attitude given the following choices: {labels}.",
     "binary": "Judge whether this tweet is pertinent to {full_name} or not, and output one of these two choices: relevant to {full_name}, irrelevant to {full_name}."

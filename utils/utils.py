@@ -21,7 +21,6 @@ def result_translator(topic, result_text, translator, task_type):
     
     result_text = result_text.strip()
     result_text = result_text.strip('.')
-    result_text = result_text.lower()
     result_text = result_text.replace('</s><s>', '')
 
     # for splitter in self.translator['splitters']:
