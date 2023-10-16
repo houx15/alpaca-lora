@@ -32,10 +32,10 @@ trainin_args = {
         "save_steps": 40,
     },
     "generation-llama-2-13b-chat-binary": {
-        "batch_size": 64,
+        "batch_size": 32,
         "micro_batch_size": 32,
         "num_epochs": 5,
-        "learning_rate": 3e-3,
+        "learning_rate": 3e-4,
         "cutoff_len": 256,
         "logging_steps": 10,
         "eval_steps": 10,

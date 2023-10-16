@@ -126,9 +126,9 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 
 | Topic | Llama2-13b-chat-Binary | Llama2-13b-chat-Regression |
 | --- | --- | --- |
-| Gun Control | | 0.745 |
-| Climate Change | 100%  | 0.54 |
-| China Favoribility | | 0.706 |
+| Gun Control | 90% | 0.745 |
+| Climate Change | 100% | 0.54 |
+| China Favoribility | 81.4% | 0.706 |
 | Abortion | 97.4% | 0.612 |
 | Sexual Orientation | 96.4% | 0.724 |
 
