@@ -11,7 +11,6 @@ from peft import (
     LoraConfig,
     PeftModel,
     get_peft_model,
-    get_peft_model_state_dict,
     prepare_model_for_kbit_training,
     set_peft_model_state_dict,
     TaskType,
@@ -80,7 +79,7 @@ class LlamaModel(object):
         self,
         topic: str = None,
         strategy: str = "sequence",  # sequence or generation or prompt
-        task_type: str = "regression",  # regression or binary, disabled for generation
+        task_type: str = "regression",  # regression or binary, regression_with_relevance for generation and prompt
         base_model: str = "",  # the only required argument
         model_type: str = "7b",  # 7b or 13b
         data_path: str = None,
@@ -99,7 +98,7 @@ class LlamaModel(object):
         # wandb_watch: str = "all",  # options: false | gradients | all
         # wandb_log_model: str = "true",  # options: false | true
         resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
-        prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
+        prompt_template_name: str = "llama",  # The prompt template to use, will default to alpaca.
     ) -> None:
         self.topic = topic
         self.config = TrainingPara(param_dict)
@@ -143,6 +142,13 @@ class LlamaModel(object):
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
+        else:
+            for file_name in os.listdir(self.log_dir):
+                file_path = os.path.join(self.log_dir, file_name)
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
 
         if int(os.environ.get("LOCAL_RANK", 0)) == 0:
             print(
@@ -216,14 +222,9 @@ class LlamaModel(object):
                 f"strategy type {self.strategy} not implemented"
             )
 
-        if self.task_type not in ["binary", "regression"]:
+        if self.task_type not in ["binary", "regression", "regression_with_relevance"]:
             raise NotImplementedError(
                 f"task type {self.task_type} not implemented"
-            )
-
-        if self.task_type == "binary" and self.strategy == "generation":
-            raise NotImplementedError(
-                "strategy generation cannot complete binary task yet."
             )
 
         model = None
@@ -260,21 +261,11 @@ class LlamaModel(object):
                 )
             else:
                 if self.strategy == "prompt":
-                    with open(
-                        os.path.join(
-                            os.path.dirname(os.path.abspath(__file__)),
-                            "configs/prompt_design.json",
-                        ),
-                        "r",
-                        encoding="utf8",
-                    ) as rfile:
-                        prompt_dict = json.loads(rfile.read())
-                        prompt = prompt_dict[self.topic]
                     config = PromptTuningConfig(
                         task_type=TaskType.CAUSAL_LM,
                         prompt_tuning_init=PromptTuningInit.TEXT,
                         num_virtual_tokens=30,
-                        prompt_tuning_init_text=prompt,
+                        # prompt_tuning_init_text=self.prompt,
                         tokenizer_name_or_path=self.base_model,
                     )
                 elif self.strategy in ["generation", "sequence"]:
@@ -336,9 +327,7 @@ class LlamaModel(object):
     def generate_and_tokenize_prompt(self, data_point):
         text = sentence_cleaner(data_point["input"])
         inputs = self.prompter.generate_prompt(
-            instruction=data_point["instruction"]
-            if self.strategy == "generation"
-            else None,
+            instruction=None if self.strategy == "prompt" else data_point["instruction"],
             input=text,
             label=None,
         )
@@ -417,9 +406,9 @@ class LlamaModel(object):
             dataset = load_dataset(
                 "json",
                 data_files={
-                    "train": f"{data_path}/train.json",
-                    "validate": f"{data_path}/val.json",
-                    "test": f"{data_path}/test.json",
+                    "train": f"{data_path}/train-{self.task_type}.json",
+                    "validate": f"{data_path}/val-{self.task_type}.json",
+                    "test": f"{data_path}/test-{self.task_type}.json",
                 },
             )
             self.train_data = (
@@ -597,9 +586,9 @@ class LlamaModel(object):
             best_run = self.trainer.hyperparameter_search(
                 hp_space=lambda x: hp_space(x),
                 backend="optuna",
-                direction="minimize"
-                if self.task_type == "regression"
-                else "maxmize",
+                direction="maximize"
+                if self.task_type == "binary"
+                else "minimize",
             )
             print("best_run", best_run)
 
@@ -642,9 +631,9 @@ class LlamaModel(object):
                 return_tensors="pt",
                 padding=True,
             ),
-            compute_metrics=self.regression_metrics_compute
-            if self.task_type == "regression"
-            else self.binary_metrics_compute,
+            compute_metrics=self.binary_metrics_compute
+            if self.task_type == "binary"
+            else self.regression_metrics_compute,
         )
 
         # if torch.__version__ >= "2" and sys.platform != "win32":
@@ -723,21 +712,21 @@ class LlamaModel(object):
             translator_dict = json.loads(rfile.read())
             translator = translator_dict[self.topic]
 
+        print(self.topic, translator)
         prediction = np.array([])
         true = np.array([])
         print("evaluate begin...")
         for single_test in tqdm(self.test_data):
             single_prompt = self.prompter.generate_prompt(
-                instruction=single_test["instruction"]
-                if self.strategy == "generation"
-                else None,
+                instruction=None if self.strategy == "prompt" else single_test["instruction"],
                 input=single_test["input"],
+                label=None,
             )
             result = self.single_prompt_evaluate(single_prompt)
-            output = result_translator(self.topic, result, translator)
+            output = result_translator(self.topic, result, translator, self.task_type)
             prediction = np.append(prediction, output)
             label = result_translator(
-                self.topic, single_test["output"], translator
+                self.topic, single_test["output"], translator, self.task_type
             )
             true = np.append(true, label)
             print(
@@ -807,6 +796,7 @@ class LlamaModel(object):
             # verbose(f'self.task_type={self.task_type}')
             if self.task_type in [
                 "regression",
+                "regression_without_relevance",
                 "binary",
             ]:  # output one score for each input
                 prediction = np.array([])
@@ -846,11 +836,11 @@ class LlamaModel(object):
                     # verbose(f'outputs.numpy()={outputs.numpy()}')
 
                     # output
-                    if "regression" == self.task_type:
+                    if self.task_type == "regression" or self.task_type == "regression_without_relevance":
                         prediction = np.append(
                             prediction, outputs.numpy().flatten()
                         )  # a score for each input string
-                    elif "binary" == self.task_type:
+                    elif self.task_type == "binary":
                         prediction = np.append(
                             prediction, special.expit(outputs.numpy()[:, 1])
                         )  # a float probability of label "1" for each input string

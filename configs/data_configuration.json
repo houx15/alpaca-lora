@@ -13,6 +13,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -30,6 +38,14 @@
             },
             "regression": {
                 "irrelevant or no opinion on gun rights/control": "skip",
+                "strongly support strict gun control": 2,
+                "strongly support gun rights": -2,
+                "slightly support strict gun control": 1,
+                "neutral to gun rights/control": 0,
+                "slightly support gun rights": -1
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on gun rights/control": -9,
                 "strongly support strict gun control": 2,
                 "strongly support gun rights": -2,
                 "slightly support strict gun control": 1,
@@ -57,6 +73,14 @@
                 "3": 1,
                 "4": 2,
                 "5": "skip"
+            },
+            "regression_with_relevance": {
+                "0": -2,
+                "1": -1,
+                "2": 0,
+                "3": 1,
+                "4": 2,
+                "5": -9
             }
         }
     },
@@ -79,6 +103,14 @@
                 "slightly support strict gun control": 1,
                 "neutral to gun rights/control": 0,
                 "slightly support gun rights": -1
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on gun rights/control": -9,
+                "strongly support strict gun control": 2,
+                "strongly support gun rights": -2,
+                "slightly support strict gun control": 1,
+                "neutral to gun rights/control": 0,
+                "slightly support gun rights": -1
             }
         }
     },
@@ -96,6 +128,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -113,6 +153,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -130,6 +178,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -147,6 +203,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -164,6 +228,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -181,6 +253,14 @@
             },
             "regression": {
                 "-99": "skip"
+            },
+            "regression_with_relevance": {
+                "-2": -2,
+                "-1": -1,
+                "0": 0,
+                "1": 1,
+                "2": 2,
+                "-99": -9
             }
         }
     },
@@ -198,6 +278,14 @@
             },
             "regression": {
                 "无关话题或未表态 (irrelevant or no opinion)": "skip",
+                "非常没有能力 (most incompetent)": -2,
+                "比较没有能力 (somewhat incompetent)": -1,
+                "中立 (neutral)": 0,
+                "比较有能力 (somewhat competent)": 1,
+                "非常有能力 (most competent)": 2
+            },
+            "regression_with_relevance": {
+                "无关话题或未表态 (irrelevant or no opinion)": -9,
                 "非常没有能力 (most incompetent)": -2,
                 "比较没有能力 (somewhat incompetent)": -1,
                 "中立 (neutral)": 0,
@@ -225,6 +313,14 @@
                 "中立 (neutral)": 0,
                 "比较喜欢 (somewhat favorable)": 1,
                 "非常喜欢 (most favorable)": 2
+            },
+            "regression_with_relevance": {
+                "无关话题或未表态 (irrelevant or no opinion)": -9,
+                "非常没有能力 (most incompetent)": -2,
+                "比较没有能力 (somewhat incompetent)": -1,
+                "中立 (neutral)": 0,
+                "比较有能力 (somewhat competent)": 1,
+                "非常有能力 (most competent)": 2
             }
         }
     },
@@ -242,6 +338,14 @@
             },
             "regression": {
                 "无关话题或未表态 (irrelevant or no opinion)": "skip",
+                "非常不友好 (most unfriendly)": -2,
+                "比较不友好 (somewhat unfriendly)": -1,
+                "中立 (neutral)": 0,
+                "比较友好 (somewhat friendly)": 1,
+                "非常友好 (most friendly)": 2
+            },
+            "regression_with_relevance": {
+                "无关话题或未表态 (irrelevant or no opinion)": -9,
                 "非常不友好 (most unfriendly)": -2,
                 "比较不友好 (somewhat unfriendly)": -1,
                 "中立 (neutral)": 0,
@@ -269,6 +373,14 @@
                 "neutral to drug legalization (decriminalized but not encouraged)": 0,
                 "slightly support legalization": -1,
                 "strongly support legalization": -2
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on drug legalization": -9,
+                "strongly support prohibition": 2,
+                "slightly support prohibition": 1,
+                "neutral to drug legalization (decriminalized but not encouraged)": 0,
+                "slightly support legalization": -1,
+                "strongly support legalization": -2
             }
         }
     },
@@ -286,6 +398,14 @@
             },
             "regression": {
                 "irrelevant or no opinion on drug legalization": "skip",
+                "strongly support prohibition": 2,
+                "slightly support prohibition": 1,
+                "neutral to drug legalization (decriminalized but not encouraged)": 0,
+                "slightly support legalization": -1,
+                "strongly support legalization": -2
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on drug legalization": -9,
                 "strongly support prohibition": 2,
                 "slightly support prohibition": 1,
                 "neutral to drug legalization (decriminalized but not encouraged)": 0,
@@ -313,6 +433,14 @@
                 "neutral to abortion rights/restrictions": 0,
                 "slightly believe abortion should be illegal": -1,
                 "strongly believe abortion should be illegal": -2
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on abortion": -9,
+                "strongly believe abortion should be legal": 2,
+                "slightly believe abortion should be legal": 1,
+                "neutral to abortion rights/restrictions": 0,
+                "slightly believe abortion should be illegal": -1,
+                "strongly believe abortion should be illegal": -2
             }
         }
     },
@@ -325,7 +453,8 @@
                 "2": 1,
                 "3": 2
             },
-            "regression": {}
+            "regression": {},
+            "regression_with_relevance": {}
         }
     },
     "2022-11-14-climate-change-sample-molardata": {
@@ -337,7 +466,8 @@
                 "2": 1,
                 "3": 2
             },
-            "regression": {}
+            "regression": {},
+            "regression_with_relevance": {}
         }
     },
     "2023-01-03-climate-change-aggregated": {
@@ -355,6 +485,15 @@
             },
             "regression": {
                 "irrelevant or no opinion on climate change": "skip",
+                "strongly agree with climate change": 2,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 0,
+                "slightly disagree with climate change": -1,
+                "strongly disagree with climate change": -2,
+                "review with junming": "skip"
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on climate change": -9,
                 "strongly agree with climate change": 2,
                 "slightly agree with climate change": 1,
                 "neutral to climate change": 0,
@@ -385,6 +524,15 @@
                 "slightly disagree with climate change": -1,
                 "strongly disagree with climate change": -2,
                 "review with junming": "skip"
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on climate change": -9,
+                "strongly agree with climate change": 2,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 0,
+                "slightly disagree with climate change": -1,
+                "strongly disagree with climate change": -2,
+                "review with junming": "skip"
             }
         }
     },
@@ -409,6 +557,15 @@
                 "slightly disagree with climate change": -1,
                 "strongly disagree with climate change": -2,
                 "review with junming": "skip"
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on climate change": -9,
+                "strongly agree with climate change": 2,
+                "slightly agree with climate change": 1,
+                "neutral to climate change": 0,
+                "slightly disagree with climate change": -1,
+                "strongly disagree with climate change": -2,
+                "review with junming": "skip"
             }
         }
     },
@@ -426,6 +583,14 @@
             },
             "regression": {
                 "irrelevant or no opinion on lgbt+ rights/issues": "skip",
+                "strongly conservative on lgbt+ issues": -2,
+                "slightly conservative on lgbt+ issues": -1,
+                "neutral to lgbt+ rights/issues": 0,
+                "slightly support lgbt+ rights": 1,
+                "strongly support lgbt+ rights": 2
+            },
+            "regression_with_relevance": {
+                "irrelevant or no opinion on lgbt+ rights/issues": -9,
                 "strongly conservative on lgbt+ issues": -2,
                 "slightly conservative on lgbt+ issues": -1,
                 "neutral to lgbt+ rights/issues": 0,

@@ -122,6 +122,25 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 |Abortion|92%|0.98|95%|0.90|||96.71%|0.88|
 |Sexual orientation|92%|0.69|92%||||||
 
+### 2. Fine Tuning With Hard Prompt
+
+| Topic | Llama2-13b-chat-Binary | Llama2-13b-chat-Regression |
+| --- | --- | --- |
+| Gun Control | 92% | 0.745 |
+| Climate Change | 100% | 0.54 |
+| China Favoribility | 81.4% | 0.706 |
+| Abortion | 97.4% | 0.612 |
+| Sexual Orientation | 96.4% | 0.724 |
+
+### 3. Prompt Tuning
+
+| Topic | Llama2-13b-chat-Regression |
+| --- | --- |
+| Gun Control | 1.217 |
+| Climate Change | 1.43 |
+| China Favoribility | 0.837 |
+| Abortion | 0.628 | 
+| Sexual Orientation | 0.808 |
 
 ## Technique Details
 

@@ -1,0 +1,172 @@
+[
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Doesnt seem to like the reality of the COP26 shitshow All the posturing, doubling down on pledges for naught as nations revert to fossil fuels as renewables continue to fail to deliver Including UK at 371gCO2! Will he be there next year? COP27 Egypt",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Is it bad that I dont actually give a dam how many people die of COVID strains like delta and omicron? The worlds overpopulated and all they ever do is go on about the housing crisis and climate change on the news",
+        "output": "neutral to the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "#Biodiversity is under serious threat from deforestation, forest degradation and climate change",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "My community is experiencing the consequences of the climate crisis firsthand: Marshall Fire Cameron Peak East Troublesome Hundred-year floods And the worst drought in generations Climate action is crucial as we Build a Better America",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "#OECD Delegation visits #INRAESIA2022 stand: our collaboration, our research in economics & our scientific expert reports 3 examples of our research adapting viticulture to climate change global changes & water and soil resources in the Mediterranean wastewater treatment",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "With your help, we can #EndExtremePovertyNOW and ensure that the worlds poorest are better prepared to withstand future shocks  be it another pandemic, a heartbreaking war, or the climate crisis Our future cant wait Join us and start taking action:",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Arent most Europeans green - concerned about climate change? Where are they and why are they not willing to make necessary sacrifices to stick to their available sustainable energy? Reduce dependence on Russian oil/natural gas and help Ukraine?",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Federal Judge Blocks Ridiculous, Key Component of Biden Climate Change Scheme By Mike Miller | Feb 13, 2022",
+        "output": "slightly disregard the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "A collection of solutions for: - Government dysfunction - Pandemic - Drugs, bullying, neighborhood investment - Police reform - Infrastructure, schools - Racism - Homelessness - Voting/election protections - Guns - Global warming - Abortion - Immune-related diseases - World peace",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "SMH article TODAY ! CSIRO study proves climate change driving Australias 800% boom in bushfires - WHAT ABSOLUTE LYING BULL SHITE !!",
+        "output": "strongly disregard the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Scientists say climate change is bad and getting worse, but it is not game over for planet Earth or humanity Action can prevent some of the worst consequences if done soon, they say, warning that doomism is not a useful response",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Very disappointing, we need bold action on climate NOW #BBB",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Please understand that Earth isnt dying - its being killed And the people killing Earth have names and addresses They do everything to deflect, mislead, and delay Climate Action Were at imminent risk of losing everything Ban Fossil Fuels Now",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "The interlinked threats of climate change and biodiversity loss share a key root cause in the mass damage and destruction of ecosystems: the crime of ecocide Chair Stop Ecocide Foundation and co-host of the ICC official side event: #Ecocide: a #FifthCrime defined",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Extinction Rebellion is what you get when green ideology goes unopposed Sure, politicians and technocrats will criticise XRs tactics But they are just as committed to an irrational green ideology Thats what should worry us, says",
+        "output": "neutral to the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "#PrinceWilliam praised #EarthshotPrize winners for #climatechange technology as the #DukeofCambridge forged important connections between innovators and leaders in a bid to repair the planet #COP26 #savetheplanet",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Many North American colleges that divested from apartheid in South Africa now have active students movements to divest from Israeli apartheid & fossil fuels #BDS #ClimateJustice Boycott and divestment are time-honored tactics for challenging injustice",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "If youre a celebrity or an influencer at this point and youre NOT ever talking about climate crisis, Im sorry its getting ridiculous, do your job, WE ALL DO NOT HAVE TIME",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "What for when you contribute to the climate crisis by mandating endless ineffective vaccines?",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Wide collaborative efforts maps #whale migrations & the threats they face across all oceans, from industrial fishing, ship strikes, pollution, habitat loss, and climate change #ProtectingBlueCorridors",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Texas? No Vaccine has its privileges This is a 5-10 year struggle Mother Nature will hasten rates or death Climate change will cause migrations during this time",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "UN Sec-Gen: Climate activists are sometimes portrayed as dangerous radicals But the truly dangerous radicals are the countries that are increasing production of fossil fuels Investing in new fossil fuel infrastructure is moral & economic madness pls note",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "A shameful decision which will do their brand no favours Relocation to a car-centric retail park well out of the town centre just gives the impression that they couldnt give a fig about their loyal customers or the climate emergency They should reconsider",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "You know why I loathe conservatives- They say no to vaccines They say no to climate change They say no to a secured future for their own children and grandchildren, never mind yours Thats the epitome of selfishness and narcissism",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "I use it to light my wood burnerjust doing my bit for climate change as welldouble whammy",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Quote: While climate change may indeed prove a serious long-term challenge, it is not reducing parts of European cities to rubble or a threat to use anuclear weapon If this horrifying episode hasnt scared the West straight on energy, nothing will",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "NEWish: Mayoral candidates discuss policy and their plans to address concerns over climate change and environmental issues Candidates discussed a large range of topics from the citys CAAP to transportation Read all about it here @byMattMcFarland",
+        "output": "neutral to the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "#WednesdayMorning Reading: #Arctic vs #ClimateChange: Large commercial ships are increasingly infiltrating formerly frozen areas, disturbing wildlife and generating disastrous amounts of trash Theres something almost sacriligious going on",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "There is no issue more important to our future than the climate emergency",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Fuck the climate change Joe Show us the trade deal ffs",
+        "output": "slightly disregard the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "I cant escape the feeling, they generally seem to be older or upper middle class, they surely know everyday working people cannot solve climate change by skipping the school run??",
+        "output": "slightly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Its unnoticed by more people than just the premier, mostly because there is no climate crisis or emergency Its purely manufactured BS by climate alarmists",
+        "output": "strongly disregard the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "Climate change is causing droughts and hurricanes, increased lightning strikes -fire risk, political - social - economic problems It is urgent to do more to hinder climate change; otherwise, there will be serious repercussions on public and national security Stop global warming",
+        "output": "strongly recognize the danger of climate change"
+    },
+    {
+        "instruction": "Analyze this tweet's opinion on climate change and output its attitude given the following choices: strongly disregard the danger of climate change, slightly disregard the danger of climate change, neutral to the danger of climate change, slightly recognize the danger of climate change, strongly recognize the danger of climate change.",
+        "input": "If you allow politicians to steal our freedom during health emergencies, THEY WILL create emergencies to steal your freedom Climate change or gun violence will soon be the next health emergency",
+        "output": "slightly disregard the danger of climate change"
+    }
+]

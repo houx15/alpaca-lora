@@ -1,9 +1,15 @@
+import os
+import json
 import torch
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
 
 from transformers import (
     LlamaTokenizer,
     LlamaForSequenceClassification,
+    LlamaForCausalLM,
+    GenerationConfig,
 )
 from transformers.utils import PaddingStrategy
 
@@ -15,7 +21,8 @@ from peft import (
 from scipy import special
 
 from typing import Union
-from utils.utils import sentence_cleaner
+from utils.utils import sentence_cleaner, result_translator
+from utils.prompter import Prompter
 
 
 model_dict = {
@@ -41,7 +48,7 @@ class OpinionPredict(object):
     """
 
     def __init__(
-        self, task_type: str, model_path: str, model_base: str = "llama-2-13b"
+        self, task_type: str, model_path: str, strategy: str = "sequence", model_base: str = "llama-2-13b", topic: str = "None"
     ) -> None:
         try:
             assert task_type in ["regression", "binary"]
@@ -49,10 +56,18 @@ class OpinionPredict(object):
             raise AssertionError(f"task type {task_type} is not supported")
 
         try:
+            assert strategy in ["sequence", "generation", "prompt"]
+        except:
+            raise AssertionError(f"strategy {strategy} is not supported")
+    
+        try:
             assert model_base in model_dict.keys()
         except:
             raise AssertionError(f"model base {model_base} is not supported")
+
         self.task_type = task_type
+        self.strategy = strategy
+        self.topic = topic
         model_base = model_dict[model_base]
 
         self.tokenizer = LlamaTokenizer.from_pretrained(model_base)
@@ -60,16 +75,61 @@ class OpinionPredict(object):
         self.tokenizer.padding_side = "left"
 
         self.model = self.model_init(model_base, model_path)
+        
+        if self.strategy == "generation" or self.strategy == "prompt":
+            with open(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "configs/label_map.json",
+                ),
+                "r",
+                encoding="utf8",
+            ) as rfile:
+                    translator_dict = json.loads(rfile.read())
+                    try:
+                        self.translator = translator_dict[topic]
+                    except:
+                        raise KeyError(f"topic {topic} is not included in translator.")
+            
+            prompter_template = "alpaca" if self.strategy == "generation" else "prompt_tuning"
+            print(f"Using template {prompter_template} for the prompter")
+            self.prompter = Prompter(prompter_template)
+        
+        if self.strategy == "generation":
+            with open(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "configs/prompt_design.json",
+                ),
+                "r",
+                encoding="utf8",
+            ) as rfile:
+                prompt_dict = json.loads(rfile.read())
+                try:
+                    self.prompt = prompt_dict[topic]
+                except:
+                    raise KeyError(f"topic {topic} is not included in the prompt dict.")
+
+            
 
     def model_init(self, model_base, model_path):
         torch.manual_seed(42)
-        model = LlamaForSequenceClassification.from_pretrained(
-            model_base,
-            num_labels=1 if self.task_type == "regression" else 2,
-            load_in_8bit=True,
-            torch_dtype=torch.float16,
-            device_map="auto",
-        )
+        model = None
+        if self.strategy == "sequence":
+            model = LlamaForSequenceClassification.from_pretrained(
+                model_base,
+                num_labels=1 if self.task_type == "regression" else 2,
+                load_in_8bit=True,
+                torch_dtype=torch.float16,
+                device_map="auto",
+            )
+        elif self.strategy == "generation" or self.strategy == "prompt":
+            model = LlamaForCausalLM.from_pretrained(
+                model_base,
+                load_in_8bit=True,
+                torch_dtype=torch.float16,
+                device_map="auto",
+            )
         model = prepare_model_for_kbit_training(model)
 
         print(f"loading peft weights: {model_path}")
@@ -116,51 +176,92 @@ class OpinionPredict(object):
         self.model.eval()
 
         prediction = np.array([])
+        
+        if self.strategy == "sequence":
+            for i in range(0, len(texts), batch):
+                encoding = self.tokenizer(
+                    [
+                        sentence_cleaner(single_text)
+                        for single_text in texts[i : i + batch]
+                    ],
+                    truncation=True,
+                    max_length=max_length,
+                    padding=padding,
+                    return_tensors="pt",
+                )
+                if torch.cuda.is_available():
+                    for key in encoding.keys():
+                        encoding[key] = encoding[key].cuda()
 
-        for i in range(0, len(texts), batch):
-            encoding = self.tokenizer(
-                [
-                    sentence_cleaner(single_text)
-                    for single_text in texts[i : i + batch]
-                ],
-                truncation=True,
-                max_length=max_length,
-                padding=padding,
-                return_tensors="pt",
+                outputs = self.model(**encoding).logits.detach()
+
+                if torch.cuda.is_available():
+                    outputs = outputs.cpu()
+
+                verbose(f"outputs.numpy().shape={outputs.numpy().shape}")
+                # output
+                if "regression" == self.task_type:
+                    prediction = np.append(
+                        prediction, outputs.numpy().flatten()
+                    )  # a score for each input string
+                elif "binary" == self.task_type:
+                    prediction = np.append(
+                        prediction, special.expit(outputs.numpy()[:, 1])
+                    )  # a float probability of label "1" for each input string
+                verbose(f"prediction.shape={prediction.shape}")
+
+        else:
+            texts_with_prompt = [self.prompter.generate_prompt(
+                instruction=self.prompt if self.strategy == "generation" else None,
+                input=text,
+            ) for text in texts]
+            
+            max_new_tokens = 20
+            generation_config = GenerationConfig(
+                repetition_penalty=1.1,
+                max_new_tokens=max_new_tokens,
             )
-            if torch.cuda.is_available():
-                for key in encoding.keys():
-                    encoding[key] = encoding[key].cuda()
-
-            outputs = self.model(**encoding).logits.detach()
-
-            if torch.cuda.is_available():
-                outputs = outputs.cpu()
-
-            verbose(f"outputs.numpy().shape={outputs.numpy().shape}")
-            # output
-            if "regression" == self.task_type:
-                prediction = np.append(
-                    prediction, outputs.numpy().flatten()
-                )  # a score for each input string
-            elif "binary" == self.task_type:
-                prediction = np.append(
-                    prediction, special.expit(outputs.numpy()[:, 1])
-                )  # a float probability of label "1" for each input string
-            verbose(f"prediction.shape={prediction.shape}")
-
+            
+            for text_with_prompt in tqdm(texts_with_prompt):
+                encoding = self.tokenizer(text_with_prompt, return_tensors="pt")
+                if torch.cuda.is_available():
+                    encoding["input_ids"] = encoding["input_ids"].cuda()
+                generate_params = {
+                    "input_ids": encoding["input_ids"],
+                    "generation_config": generation_config,
+                    "return_dict_in_generate": True,
+                    "output_scores": True,
+                    "max_new_tokens": max_new_tokens,
+                }
+                with torch.no_grad():
+                    generation_output = self.model.generate(
+                        input_ids=encoding["input_ids"],
+                        generation_config=generation_config,
+                        return_dict_in_generate=True,
+                        output_scores=True,
+                        max_new_tokens=max_new_tokens,
+                    )
+                # if torch.cuda.is_available():
+                #     generation_output = generation_output.cpu()
+                output = self.tokenizer.decode(generation_output.sequences[0], skip_special_tokens=True)
+                result = self.prompter.get_response(output)
+                prediction = np.append(prediction, int(result_translator(self.topic, result, self.translator)))
+            
         return prediction
 
 
 if __name__ == "__main__":
-    a = OpinionPredict(
-        task_type="binary",
-        model_path="/scratch/network/yh6580/output/sequence/llama-2-13b/abortion/binary/checkpoint-2250",
+    
+    predictor = OpinionPredict(
+        task_type="regression",
+        strategy="generation",
+        model_base="llama-2-13b-chat",
+        # model_path="/scratch/network/dg2944/alpaca-lora/output/generation/llama-2-13b-chat/gun/regression",
+        topic="gun",
     )
-    import pandas as pd
 
-    data = pd.read_csv("dataset/abortion/test-binary.csv")
+    data = pd.read_csv("dataset/gun/test-regression.csv")
     texts = data["text"].values
 
-    result = a.predict(texts=texts, batch=8)
+    result = predictor.predict(texts=texts, batch=8)
     print(result)

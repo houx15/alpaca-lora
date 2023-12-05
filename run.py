@@ -34,7 +34,7 @@ def run(
     do_eval: bool = False,
     dataset_update: bool = False,
     augmentation: bool = False,
-    task_type: str = "regression",  # options: regression or binary
+    task_type: str = "regression",  # options: regression or binary or regression_with_relevance
     strategy: str = "sequence",  # options: sequence, generation or prompt
     model_type: str = "7b",  # options: 7b or 13b or llama-2-7b or llama-2-13b
     labeller: str = None,
