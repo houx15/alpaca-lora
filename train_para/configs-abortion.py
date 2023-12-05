@@ -19,6 +19,13 @@ trainin_args = {
         "learning_rate": 3e-4,
         "cutoff_len": 256,
     },
+    "sequence-13b-binary": {
+        "batch_size": 16,
+        "micro_batch_size": 16,
+        "num_epochs": 10,
+        "learning_rate": 3e-4,
+        "cutoff_len": 256,
+    },
     "sequence-llama-2-13b-chat-regression": {
         "batch_size": 64,
         "micro_batch_size": 32,
