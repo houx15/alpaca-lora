@@ -130,7 +130,7 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 | Climate Change | 100% | 0.54 |
 | China Favoribility | 83.9%(x) | 0.706 |
 | Abortion | 97.4% | 0.612 |
-| Sexual Orientation | 96.4% | (x) |
+| Sexual Orientation | 96.4% | 0.751 |
 
 ### 3. Prompt Tuning (--prompt)
 

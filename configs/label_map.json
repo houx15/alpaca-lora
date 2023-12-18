@@ -1,14 +1,14 @@
 {
     "gun": {
         "labels": {
-            "strongly support gun rights": -2,
-            "slightly support gun rights": -1,
+            "strongly oppose strict gun control": -2,
+            "slightly oppose strict gun control": -1,
             "neutral to gun rights/control": 0,
             "slightly support strict gun control": 1,
             "strongly support strict gun control": 2,
             "irrelevant to gun rights/control": -9
         },
-        "splitters": ["control", "rights"]
+        "splitters": ["control"]
     },
     "abortion": {
         "labels": {
@@ -55,12 +55,13 @@
     },
     "sexual": {
         "labels": {
-            "strongly conservative on lgbt+ issues": 2,
-            "slightly conservative on lgbt+ issues": 1,
-            "neutral to lgbt+ rights/issues": 0,
-            "slightly support lgbt+ rights": -1,
-            "strongly support lgbt+ rights": -2,
-            "irrelevant to lgbt+ rights/issues": -9
-        }
+            "strongly oppose LGBT+ rights": 2,
+            "slightly oppose LGBT+ rights": 1,
+            "neutral to LGBT+ rights/issues": 0,
+            "slightly support LGBT+ rights": -1,
+            "strongly support LGBT+ rights": -2,
+            "irrelevant to LGBT+ rights/issues": -9
+        },
+        "splitters": ["rights", "issues"]
     }
 }
