@@ -36,7 +36,10 @@ class DataGen(object):
                 else:
                     labels_with_relevance.append(label_mapping[0])
         if self.task_type == "binary":
-            self.prompt = prompt_dict["binary"].format(full_name=self.full_name)
+            if self.topic in prompt_dict["binary"]:
+                self.prompt = prompt_dict["binary"][self.topic]
+            else:
+                self.prompt = prompt_dict["binary"]["default"].format(full_name=self.full_name)
         elif self.task_type == "regression":
             self.prompt = prompt_dict["regression"].format(full_name=self.full_name, labels=', '.join(labels_without_relevance))
         elif self.task_type == "regression_with_relevance":
@@ -57,8 +60,12 @@ class DataGen(object):
             for k, v in self.translator['labels'].items():
                 convert_label_dict[v] = k
         elif self.task_type == "binary":
-            convert_label_dict[0] = f"irrelevant to {self.full_name}"
-            convert_label_dict[1] = f"relevant to {self.full_name}"
+            if self.topic == "china":
+                convert_label_dict[0] = "doesn't convey a clear sentiment about China"
+                convert_label_dict[1] = "conveys a clear sentiment about China"
+            else:
+                convert_label_dict[0] = f"irrelevant to {self.full_name}"
+                convert_label_dict[1] = f"relevant to {self.full_name}"
         
         self.train_df['label'] = self.train_df['label'].map(convert_label_dict)
         self.val_df['label'] = self.val_df['label'].map(convert_label_dict)

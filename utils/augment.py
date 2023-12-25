@@ -73,14 +73,14 @@ def dataset_augmentation(
         remained_df = index_df[~index_df.index.isin(sampled_df.index)]
         aug_n = update_size[index]["quotient"]
         for text in tqdm(sampled_df["text"]):
-            text = sentence_cleaner(src_type, text)
+            text = sentence_cleaner(text)
             augmented_texts = aug.augment(text, n=aug_n)
             for atext in augmented_texts:
                 aug_dict["label"].append(index)
                 aug_dict["text"].append(atext)
         if aug_n - 1 > 0:
             for text in tqdm(remained_df["text"]):
-                text = sentence_cleaner(src_type, text)
+                text = sentence_cleaner(text)
                 augmented_texts = aug.augment(text, n=aug_n - 1)
                 for atext in augmented_texts:
                     aug_dict["label"].append(index)
