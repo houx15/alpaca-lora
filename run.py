@@ -10,12 +10,18 @@ import fire
 from data_process import DataProcess
 from model import LlamaModel
 
+
+# 设置环境变量
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+
 model_dict = {
     "7b": "chainyo/alpaca-lora-7b",
     "13b": "yahma/llama-13b-hf",
     "llama-2-7b": "meta-llama/Llama-2-7b-hf",
     "llama-2-13b-chat": "meta-llama/Llama-2-13b-chat-hf",
     "llama-2-13b": "meta-llama/Llama-2-13b-hf",
+    "llama-3-8b": "meta-llama/Meta-Llama-3-8B",
 }
 
 peft_dict = {
@@ -24,6 +30,7 @@ peft_dict = {
     "llama-2-7b": None,
     "llama-2-13b-chat": None,
     "llama-2-13b": None,
+    "llama-3-8b": None,
 }
 
 
@@ -36,9 +43,10 @@ def run(
     augmentation: bool = False,
     task_type: str = "regression",  # options: regression or binary or regression_with_relevance
     strategy: str = "sequence",  # options: sequence, generation or prompt
-    model_type: str = "7b",  # options: 7b or 13b or llama-2-7b or llama-2-13b
+    model_type: str = "llama-3-8b",
     labeller: str = None,
     peft: bool = True,
+    load_8bit: bool = True,
     use_pretrained_peft_weights: bool = False,
     eval_model_path: str = None,
     parameter_search: bool = False,
@@ -55,6 +63,7 @@ def run(
     - task_type: str, train task type, regression or binary
     - config: str, the path for config file. Use configs-{topic}.py  (or 'configs-{topic}-{dimension}' when dimension is specified) in the 'configs' directory by default
     """
+    print("peft>>>>>", peft)
     config_module = None
     config_module_name = f"train_para.configs-{topic}"
     if dimension is not None:
@@ -78,12 +87,12 @@ def run(
         )
 
     if model_dict.get(model_type) is None:
-        raise NotImplementedError(
-            f"Model type {model_type} is not implemented!"
-        )
+        raise NotImplementedError(f"Model type {model_type} is not implemented!")
 
     if output_dir is None:
-        output_dir = f"{output_dir_base}output/{strategy}/{model_type}/{topic}/{task_type}"
+        output_dir = (
+            f"{output_dir_base}output/{strategy}/{model_type}/{topic}/{task_type}"
+        )
     if log_dir is None:
         log_dir = f"logs/{strategy}/{model_type}/{topic}/{task_type}"
 
@@ -135,6 +144,7 @@ def run(
             f"{strategy}-{model_type}-{task_type}", {}
         ),
         peft=peft,
+        load_8bit=load_8bit,
         peft_weights=peft_weights if use_pretrained_peft_weights else None,
         output_dir=output_dir,
         log_dir=log_dir,

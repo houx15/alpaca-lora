@@ -2,7 +2,7 @@ DATASET_DIR = "dataset/climate/"
 # DATASET_FILES = ["2022-11-02-climate-change-sample-molardata", "2022-11-14-climate-change-sample-molardata"]
 DATASET_FILES = [
     "2023-09-20-climate-change-aggregated",
-    "2023-09-20-climate-change-aggregated-oversample",
+    # "2023-09-20-climate-change-aggregated-oversample",
 ]
 OVERSAMPLE_FILES = ["2023-09-20-climate-change-aggregated-oversample"]
 
@@ -75,3 +75,15 @@ trainin_args = {
         "save_steps": 40,
     },
 }
+
+
+def hp_space_optuna(trial):
+    return {
+        "weight_decay": trial.suggest_float("weight_decay", 0.01, 0.3),
+        "warmup_steps": trial.suggest_int("warmup_steps", 0, 200),
+        "learning_rate": trial.suggest_float("learning_rate", 1e-4, 5e-3, log=True),
+        "num_train_epochs": trial.suggest_int("num_train_epochs", 5, 20, log=True),
+        "per_device_train_batch_size": trial.suggest_categorical(
+            "per_device_train_batch_size", [16, 32]
+        ),
+    }

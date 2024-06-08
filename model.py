@@ -20,9 +20,11 @@ from peft import (
 
 from transformers import (
     LlamaForCausalLM,
-    LlamaTokenizer,
+    AutoTokenizer,
     GenerationConfig,
     LlamaForSequenceClassification,
+    AutoModelForSequenceClassification,
+    BitsAndBytesConfig,
 )
 
 from utils.prompter import Prompter
@@ -42,6 +44,15 @@ import json
 from tqdm import tqdm
 import tensorboardX
 
+print("PyTorch版本:", torch.__version__)
+
+# 检查CUDA是否可用
+if torch.cuda.is_available():
+    # 查看CUDA版本
+    print("CUDA版本:", torch.version.cuda)
+else:
+    print("CUDA不可用")
+
 
 class TrainingPara(object):
     batch_size: int = 128
@@ -55,22 +66,19 @@ class TrainingPara(object):
     lora_target_modules: List[str] = ["q_proj", "v_proj"]
     train_on_inputs: bool = False  # if False, masks out inputs in loss
     add_eos_token: bool = True
-    group_by_length: bool = (
-        False  # faster, but produces an odd training loss curve
-    )
+    group_by_length: bool = False  # faster, but produces an odd training loss curve
     warmup_steps: int = 50
     optim: str = "adamw_torch"
     logging_steps: int = 50
     eval_steps: int = 50
     save_steps: int = 50
     modules_to_save: list = None
+    weight_decay: float = 0.01
 
     def __init__(self, param_dict: dict = {}):
         for key, value in param_dict.items():
             setattr(self, key, value)
-        self.gradient_accumulation_steps = (
-            self.batch_size // self.micro_batch_size
-        )
+        self.gradient_accumulation_steps = self.batch_size // self.micro_batch_size
 
 
 class LlamaModel(object):
@@ -92,11 +100,6 @@ class LlamaModel(object):
         peft_weights: str = None,
         device_map="auto",
         hp_space_optuna=None,
-        # TODO wandb params, unable to use as the GPU cannot access to internet
-        # wandb_project: str = "",
-        # wandb_run_name: str = "",
-        # wandb_watch: str = "all",  # options: false | gradients | all
-        # wandb_log_model: str = "true",  # options: false | true
         resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
         prompt_template_name: str = "llama",  # The prompt template to use, will default to alpaca.
     ) -> None:
@@ -164,10 +167,6 @@ class LlamaModel(object):
                 f"train_on_inputs: {self.config.train_on_inputs}\n"
                 f"add_eos_token: {self.config.add_eos_token}\n"
                 f"group_by_length: {self.config.group_by_length}\n"
-                # f"wandb_project: {wandb_project}\n"
-                # f"wandb_run_name: {wandb_run_name}\n"
-                # f"wandb_watch: {wandb_watch}\n"
-                # f"wandb_log_model: {wandb_log_model}\n"
                 f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
                 f"prompt template: {prompt_template_name}\n"
             )
@@ -189,24 +188,16 @@ class LlamaModel(object):
                 self.config.gradient_accumulation_steps // world_size
             )
 
-        # use_wandb = len(wandb_project) > 0 or (
-        #     "WANDB_PROJECT" in os.environ
-        #     and len(os.environ["WANDB_PROJECT"]) > 0
-        # )
-        # # Only overwrite environ if wandb param passed
-        # if len(wandb_project) > 0:
-        #     os.environ["WANDB_PROJECT"] = wandb_project
-        # if len(wandb_watch) > 0:
-        #     os.environ["WANDB_WATCH"] = wandb_watch
-        # if len(wandb_log_model) > 0:
-        #     os.environ["WANDB_LOG_MODEL"] = wandb_log_model
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model)
+        self.tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+        # self.tokenizer.add_special_tokens({"pad_token": self.tokenizer.eos_token})
+        # 确认 pad_token 和 eos_token 的设置
+        print(f"Pad token: {self.tokenizer.pad_token}")
+        print(f"Pad token ID: {self.tokenizer.pad_token_id}")
+        print(f"EOS token: {self.tokenizer.eos_token}")
+        print(f"EOS token ID: {self.tokenizer.eos_token_id}")
 
         self.model_init()
-        self.tokenizer = LlamaTokenizer.from_pretrained(base_model)
-        self.tokenizer.pad_token_id = (
-            0  # unk. we want this to be different from the eos token
-        )
-        self.tokenizer.padding_side = "left"  # Allow batched inference
 
         if strategy in ["generation", "prompt"]:
             self.prompter = Prompter(prompt_template_name)
@@ -218,28 +209,28 @@ class LlamaModel(object):
     ):
         torch.manual_seed(42)
         if self.strategy not in ["sequence", "generation", "prompt"]:
-            raise NotImplementedError(
-                f"strategy type {self.strategy} not implemented"
-            )
+            raise NotImplementedError(f"strategy type {self.strategy} not implemented")
 
         if self.task_type not in ["binary", "regression", "regression_with_relevance"]:
-            raise NotImplementedError(
-                f"task type {self.task_type} not implemented"
-            )
+            raise NotImplementedError(f"task type {self.task_type} not implemented")
+
+        quantization_config = BitsAndBytesConfig(
+            load_in_8bit=True,
+        )
 
         model = None
         if self.strategy == "sequence":
-            model = LlamaForSequenceClassification.from_pretrained(
+            model = AutoModelForSequenceClassification.from_pretrained(
                 self.base_model,
                 num_labels=1 if self.task_type == "regression" else 2,
-                load_in_8bit=self.load_8bit,
-                torch_dtype=torch.float16,
+                quantization_config=quantization_config,
+                # torch_dtype=torch.float16,
                 device_map=self.device_map,
             )
         elif self.strategy == "generation" or self.strategy == "prompt":
             model = LlamaForCausalLM.from_pretrained(
                 self.base_model,
-                load_in_8bit=self.load_8bit,
+                quantization_config=quantization_config,
                 torch_dtype=torch.float16,
                 device_map=self.device_map,
             )
@@ -247,10 +238,9 @@ class LlamaModel(object):
         if model is None:
             raise RuntimeError("model init failed")
 
-        # TODO int 8 may decrease the accuracy
-        model = prepare_model_for_kbit_training(model)
-
         if self.peft:
+            # TODO int 8 may decrease the accuracy
+            model = prepare_model_for_kbit_training(model)
             if self.peft_weights is not None:
                 print("Peft weight file path:", self.peft_weights)
                 model = PeftModel.from_pretrained(
@@ -275,9 +265,11 @@ class LlamaModel(object):
                         target_modules=self.config.lora_target_modules,
                         lora_dropout=self.config.lora_dropout,
                         bias="none",
-                        task_type=TaskType.SEQ_CLS
-                        if self.strategy == "sequence"
-                        else TaskType.CAUSAL_LM,
+                        task_type=(
+                            TaskType.SEQ_CLS
+                            if self.strategy == "sequence"
+                            else TaskType.CAUSAL_LM
+                        ),
                         modules_to_save=["norm", "score", "classifier"],
                     )
                 model = get_peft_model(model, config)
@@ -304,17 +296,6 @@ class LlamaModel(object):
                 else:
                     print(f"Checkpoint {checkpoint_name} not found")
 
-            # if self.peft_weights:
-            #     model.config.use_cache = True
-            # else:
-            #     model.config.use_cache = False
-            # old_state_dict = model.state_dict
-            # model.state_dict = (
-            #     lambda self, *_, **__: get_peft_model_state_dict(
-            #         self, old_state_dict()
-            #     )
-            # ).__get__(model, type(model))
-
             model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
         if not self.ddp and torch.cuda.device_count() > 1:
@@ -322,12 +303,17 @@ class LlamaModel(object):
             model.model_parallel = True
 
         self.model = model
+        self.model.resize_token_embeddings(len(self.tokenizer))
+        self.model.config.pad_token_id = self.tokenizer.pad_token_id
+        print(f"Model token id: {self.model.config.pad_token_id}")
         return model
 
     def generate_and_tokenize_prompt(self, data_point):
         text = sentence_cleaner(data_point["input"])
         inputs = self.prompter.generate_prompt(
-            instruction=None if self.strategy == "prompt" else data_point["instruction"],
+            instruction=(
+                None if self.strategy == "prompt" else data_point["instruction"]
+            ),
             input=text,
             label=None,
         )
@@ -357,21 +343,26 @@ class LlamaModel(object):
             text,
             truncation=True,
             max_length=self.config.cutoff_len,
-            padding=False,
+            # padding=True,
             return_tensors=None,
         )
-        if (
-            result["input_ids"][-1] != self.tokenizer.eos_token_id
-            and len(result["input_ids"]) < self.config.cutoff_len
-            and self.config.add_eos_token
-        ):
-            result["input_ids"].append(self.tokenizer.eos_token_id)
-            result["attention_mask"].append(1)
+        # if (
+        #     result["input_ids"][-1] != self.tokenizer.eos_token_id
+        #     and len(result["input_ids"]) < self.config.cutoff_len
+        #     and self.config.add_eos_token
+        # ):
+        #     result["input_ids"].append(self.tokenizer.eos_token_id)
+        #     result["attention_mask"].append(1)
 
         if self.task_type == "regression":
-            result["labels"] = float(data_point["label"])
+            result["labels"] = float(
+                data_point["label"]
+            )  # torch.tensor(float(data_point["label"])).unsqueeze(0)
         else:
-            result["labels"] = int(data_point["label"])
+            result["labels"] = int(
+                data_point["label"]
+            )  # torch.tensor(int(data_point["label"])).unsqueeze(0)
+        # print(result)
 
         return result
 
@@ -385,18 +376,11 @@ class LlamaModel(object):
                     "test": f"{data_path}/test-{self.task_type}.csv",
                 },
             )
-            self.train_data = (
-                dataset["train"].shuffle().map(self.sequence_tokenizer)
-            )
+            self.train_data = dataset["train"].shuffle().map(self.sequence_tokenizer)
             self.validate_data = (
                 dataset["validate"].shuffle().map(self.sequence_tokenizer)
             )
-            self.test_data = (
-                dataset["test"].shuffle().map(self.sequence_tokenizer)
-            )
-
-            # signature_columns = ["input_ids", "attention_mask", "labels"]
-            # ignored_columns = list(set(self.train_data.column_names) - set(signature_columns))
+            self.test_data = dataset["test"].shuffle().map(self.sequence_tokenizer)
 
             self.train_data = self.train_data.remove_columns(["label"])
             self.validate_data = self.validate_data.remove_columns(["label"])
@@ -412,19 +396,13 @@ class LlamaModel(object):
                 },
             )
             self.train_data = (
-                dataset["train"]
-                .shuffle()
-                .map(self.generate_and_tokenize_prompt)
+                dataset["train"].shuffle().map(self.generate_and_tokenize_prompt)
             )
             self.validate_data = (
-                dataset["validate"]
-                .shuffle()
-                .map(self.generate_and_tokenize_prompt)
+                dataset["validate"].shuffle().map(self.generate_and_tokenize_prompt)
             )
             self.test_data = (
-                dataset["test"]
-                .shuffle()
-                .map(self.generate_and_tokenize_prompt)
+                dataset["test"].shuffle().map(self.generate_and_tokenize_prompt)
             )
         print(
             f"\nFinish loading data: there are {len(self.train_data)} train data, {len(self.validate_data)} validation data, {len(self.test_data)} test data."
@@ -461,17 +439,6 @@ class LlamaModel(object):
 
         rmse = mean_squared_error(labels, preds, squared=False)
 
-        integerized_preds = np.around(preds)
-        integerized_rmse = mean_squared_error(
-            labels, integerized_preds, squared=False
-        )
-
-        diff = np.subtract(integerized_preds, labels)
-        # when integerized_pred equals to label, assume there diff is 0
-        label_precision_preds = np.where(diff, preds, labels)
-        label_precision_rmse = mean_squared_error(
-            labels, label_precision_preds, squared=False
-        )
         for idx, x in np.ndenumerate(labels):
             preds_set = self.error_analysis.get(x, np.array(0))
             preds_set = np.append(preds_set, preds[idx])
@@ -479,39 +446,27 @@ class LlamaModel(object):
 
         return {
             "rmse": rmse,
-            "integerized_rmse": integerized_rmse,
-            "label_precision_rmse": label_precision_rmse,
         }
 
     def default_hp_space_optuna(self, trial):
         return {
             "weight_decay": trial.suggest_categorical(
-                "weight_decay", [0.01, 0.03, 0.05, 0.1, 0.2]
+                "weight_decay", [0, 0.1, 0.2, 0.3]
             ),
             "warmup_steps": trial.suggest_categorical(
-                "warmup_steps", [20, 40, 50, 60, 100, 200]
+                "warmup_steps", [0, 20, 30, 50, 100, 200]
             ),
-            "learning_rate": trial.suggest_categorical(
-                "learning_rate", [5e-5, 1e-4, 2e-4, 3e-4, 5e-4, 1e-3]
-            ),
-            "num_train_epochs": trial.suggest_int(
-                "num_train_epochs", 10, 20, log=True
-            ),
+            "learning_rate": trial.suggest_float("learning_rate", 1e-4, 5e-3, log=True),
+            "num_train_epochs": trial.suggest_int("num_train_epochs", 5, 15, log=True),
             "per_device_train_batch_size": trial.suggest_categorical(
-                "per_device_train_batch_size", [16, 32, 64]
+                "per_device_train_batch_size", [8, 16, 32]
             ),
         }
 
     def train(self, parameter_search: bool = False):
         self.model.train()
-
-        metric_for_best_model = ""
-        if self.strategy == "sequence":
-            metric_for_best_model = (
-                "accuracy" if self.task_type == "binary" else "rmse"
-            )
-        else:
-            metric_for_best_model = "loss"
+        metric_for_best_model = "accuracy" if self.task_type == "binary" else "rmse"
+        print(metric_for_best_model)
 
         self.trainer = transformers.Trainer(
             model=self.model,
@@ -526,32 +481,34 @@ class LlamaModel(object):
                 # fp16=False,
                 logging_steps=self.config.logging_steps,
                 optim=self.config.optim,
+                weight_decay=self.config.weight_decay,
                 evaluation_strategy="steps",
                 save_strategy="steps",
                 eval_steps=self.config.eval_steps,
                 save_steps=self.config.save_steps,
                 output_dir=self.output_dir,
                 save_total_limit=3,
-                # remove_unused_columns=False,
                 label_names=["labels"],
                 load_best_model_at_end=False,
                 metric_for_best_model=metric_for_best_model,
                 ddp_find_unused_parameters=False if self.ddp else None,
                 group_by_length=False,
-                # report_to="wandb",
-                # run_name=wandb_run_name if use_wandb else None,
                 report_to=["tensorboard"],
                 logging_dir=self.log_dir,
+                disable_tqdm=True,
             ),
-            data_collator=transformers.DataCollatorWithPadding(
-                self.tokenizer, return_tensors="pt"
-            )
-            if self.strategy == "sequence"
-            else transformers.DataCollatorForSeq2Seq(
-                self.tokenizer,
-                pad_to_multiple_of=8,
-                return_tensors="pt",
-                padding=True,
+            # data_collator=None,
+            data_collator=(
+                transformers.DataCollatorWithPadding(
+                    self.tokenizer, return_tensors="pt", padding=True
+                )
+                if self.strategy == "sequence"
+                else transformers.DataCollatorForSeq2Seq(
+                    self.tokenizer,
+                    pad_to_multiple_of=8,
+                    return_tensors="pt",
+                    padding=True,
+                )
             ),
         )
 
@@ -561,17 +518,6 @@ class LlamaModel(object):
                 if self.task_type == "binary"
                 else self.regression_metrics_compute
             )
-
-        # self.model.config.use_cache = False
-        # old_state_dict = self.model.state_dict
-        # self.model.state_dict = (
-        #     lambda self, *_, **__: get_peft_model_state_dict(
-        #         self, old_state_dict()
-        #     )
-        # ).__get__(self.model, type(self.model))
-
-        # if torch.__version__ >= "2" and sys.platform != "win32":
-        #     self.model = torch.compile(self.model)
 
         if parameter_search:
             import optuna
@@ -586,9 +532,7 @@ class LlamaModel(object):
             best_run = self.trainer.hyperparameter_search(
                 hp_space=lambda x: hp_space(x),
                 backend="optuna",
-                direction="maximize"
-                if self.task_type == "binary"
-                else "minimize",
+                direction="maximize" if self.task_type == "binary" else "minimize",
             )
             print("best_run", best_run)
 
@@ -618,22 +562,26 @@ class LlamaModel(object):
                 fp16=False,
                 optim=self.config.optim,
                 ddp_find_unused_parameters=False if self.ddp else None,
-                group_by_length=False
+                group_by_length=False,
                 # remove_unused_columns=False,
             ),
-            data_collator=transformers.DataCollatorWithPadding(
-                self.tokenizer, return_tensors="pt"
-            )
-            if self.strategy == "sequence"
-            else transformers.DataCollatorForSeq2Seq(
-                self.tokenizer,
-                pad_to_multiple_of=8,
-                return_tensors="pt",
-                padding=True,
+            data_collator=(
+                transformers.DataCollatorWithPadding(
+                    self.tokenizer, return_tensors="pt"
+                )
+                if self.strategy == "sequence"
+                else transformers.DataCollatorForSeq2Seq(
+                    self.tokenizer,
+                    pad_to_multiple_of=8,
+                    return_tensors="pt",
+                    padding=True,
+                )
             ),
-            compute_metrics=self.binary_metrics_compute
-            if self.task_type == "binary"
-            else self.regression_metrics_compute,
+            compute_metrics=(
+                self.binary_metrics_compute
+                if self.task_type == "binary"
+                else self.regression_metrics_compute
+            ),
         )
 
         # if torch.__version__ >= "2" and sys.platform != "win32":
@@ -718,7 +666,9 @@ class LlamaModel(object):
         print("evaluate begin...")
         for single_test in tqdm(self.test_data):
             single_prompt = self.prompter.generate_prompt(
-                instruction=None if self.strategy == "prompt" else single_test["instruction"],
+                instruction=(
+                    None if self.strategy == "prompt" else single_test["instruction"]
+                ),
                 input=single_test["input"],
                 label=None,
             )
@@ -787,9 +737,7 @@ class LlamaModel(object):
         batch: int = 64,
         verbose=print,
     ) -> np.array:
-        verbose(
-            f"predict(texts={len(texts)}, max_length={max_length}, batch={batch})"
-        )
+        verbose(f"predict(texts={len(texts)}, max_length={max_length}, batch={batch})")
         self.model.eval()
         torch.cuda.empty_cache()
         try:
@@ -836,7 +784,10 @@ class LlamaModel(object):
                     # verbose(f'outputs.numpy()={outputs.numpy()}')
 
                     # output
-                    if self.task_type == "regression" or self.task_type == "regression_without_relevance":
+                    if (
+                        self.task_type == "regression"
+                        or self.task_type == "regression_without_relevance"
+                    ):
                         prediction = np.append(
                             prediction, outputs.numpy().flatten()
                         )  # a score for each input string
@@ -851,9 +802,7 @@ class LlamaModel(object):
                         )  # three probabilities for each input string. outputs.shape=(num of inputs, 3)
                         # verbose(f'prediction={prediction}')
                     else:
-                        raise ValueError(
-                            f"Unknown self.task_type = {self.task_type}."
-                        )
+                        raise ValueError(f"Unknown self.task_type = {self.task_type}.")
                     del outputs
                     torch.cuda.empty_cache()
                     verbose(f"prediction.shape={prediction.shape}")

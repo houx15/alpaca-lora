@@ -10,6 +10,9 @@ from transformers import (
     LlamaForSequenceClassification,
     LlamaForCausalLM,
     GenerationConfig,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    AutoModelForSequenceClassification,
 )
 from transformers.utils import PaddingStrategy
 
@@ -31,6 +34,7 @@ model_dict = {
     "llama-2-7b": "meta-llama/Llama-2-7b-hf",
     "llama-2-13b-chat": "meta-llama/Llama-2-13b-chat-hf",
     "llama-2-13b": "meta-llama/Llama-2-13b-hf",
+    "llama-3-8b": "meta-llama/Meta-Llama-3-8B",
 }
 
 
@@ -48,7 +52,12 @@ class OpinionPredict(object):
     """
 
     def __init__(
-        self, task_type: str, model_path: str, strategy: str = "sequence", model_base: str = "llama-2-13b", topic: str = "None"
+        self,
+        task_type: str,
+        model_path: str,
+        strategy: str = "sequence",
+        model_base: str = "llama-3-8b",
+        topic: str = "None",
     ) -> None:
         try:
             assert task_type in ["regression", "binary"]
@@ -59,7 +68,7 @@ class OpinionPredict(object):
             assert strategy in ["sequence", "generation", "prompt"]
         except:
             raise AssertionError(f"strategy {strategy} is not supported")
-    
+
         try:
             assert model_base in model_dict.keys()
         except:
@@ -70,12 +79,17 @@ class OpinionPredict(object):
         self.topic = topic
         model_base = model_dict[model_base]
 
-        self.tokenizer = LlamaTokenizer.from_pretrained(model_base)
-        self.tokenizer.pad_token_id = 0
-        self.tokenizer.padding_side = "left"
+        self.tokenizer = AutoTokenizer.from_pretrained(model_base)
+        self.tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+        # self.tokenizer.add_special_tokens({"pad_token": self.tokenizer.eos_token})
+        # 确认 pad_token 和 eos_token 的设置
+        print(f"Pad token: {self.tokenizer.pad_token}")
+        print(f"Pad token ID: {self.tokenizer.pad_token_id}")
+        print(f"EOS token: {self.tokenizer.eos_token}")
+        print(f"EOS token ID: {self.tokenizer.eos_token_id}")
 
         self.model = self.model_init(model_base, model_path)
-        
+
         if self.strategy == "generation" or self.strategy == "prompt":
             with open(
                 os.path.join(
@@ -85,16 +99,18 @@ class OpinionPredict(object):
                 "r",
                 encoding="utf8",
             ) as rfile:
-                    translator_dict = json.loads(rfile.read())
-                    try:
-                        self.translator = translator_dict[topic]
-                    except:
-                        raise KeyError(f"topic {topic} is not included in translator.")
-            
-            prompter_template = "alpaca" if self.strategy == "generation" else "prompt_tuning"
+                translator_dict = json.loads(rfile.read())
+                try:
+                    self.translator = translator_dict[topic]
+                except:
+                    raise KeyError(f"topic {topic} is not included in translator.")
+
+            prompter_template = (
+                "alpaca" if self.strategy == "generation" else "prompt_tuning"
+            )
             print(f"Using template {prompter_template} for the prompter")
             self.prompter = Prompter(prompter_template)
-        
+
         if self.strategy == "generation":
             with open(
                 os.path.join(
@@ -110,16 +126,18 @@ class OpinionPredict(object):
                 except:
                     raise KeyError(f"topic {topic} is not included in the prompt dict.")
 
-            
-
     def model_init(self, model_base, model_path):
         torch.manual_seed(42)
         model = None
+        quantization_config = BitsAndBytesConfig(
+            load_in_8bit=True,
+        )
+
         if self.strategy == "sequence":
-            model = LlamaForSequenceClassification.from_pretrained(
+            model = AutoModelForSequenceClassification.from_pretrained(
                 model_base,
                 num_labels=1 if self.task_type == "regression" else 2,
-                load_in_8bit=True,
+                quantization_config=quantization_config,
                 torch_dtype=torch.float16,
                 device_map="auto",
             )
@@ -170,13 +188,11 @@ class OpinionPredict(object):
             output: array([ 1.7457896 ,  1.0045699 ,  0.07550862, -0.76812345], dtype=float32)
             ground truth: [2, 1, 0, -1]
         """
-        verbose(
-            f"predict(texts={len(texts)}), max_length={max_length}, batch={batch}"
-        )
+        verbose(f"predict(texts={len(texts)}), max_length={max_length}, batch={batch}")
         self.model.eval()
 
         prediction = np.array([])
-        
+
         if self.strategy == "sequence":
             for i in range(0, len(texts), batch):
                 encoding = self.tokenizer(
@@ -211,17 +227,20 @@ class OpinionPredict(object):
                 verbose(f"prediction.shape={prediction.shape}")
 
         else:
-            texts_with_prompt = [self.prompter.generate_prompt(
-                instruction=self.prompt if self.strategy == "generation" else None,
-                input=text,
-            ) for text in texts]
-            
+            texts_with_prompt = [
+                self.prompter.generate_prompt(
+                    instruction=self.prompt if self.strategy == "generation" else None,
+                    input=text,
+                )
+                for text in texts
+            ]
+
             max_new_tokens = 20
             generation_config = GenerationConfig(
                 repetition_penalty=1.1,
                 max_new_tokens=max_new_tokens,
             )
-            
+
             for text_with_prompt in tqdm(texts_with_prompt):
                 encoding = self.tokenizer(text_with_prompt, return_tensors="pt")
                 if torch.cuda.is_available():
@@ -243,20 +262,25 @@ class OpinionPredict(object):
                     )
                 # if torch.cuda.is_available():
                 #     generation_output = generation_output.cpu()
-                output = self.tokenizer.decode(generation_output.sequences[0], skip_special_tokens=True)
+                output = self.tokenizer.decode(
+                    generation_output.sequences[0], skip_special_tokens=True
+                )
                 result = self.prompter.get_response(output)
-                prediction = np.append(prediction, int(result_translator(self.topic, result, self.translator)))
-            
+                prediction = np.append(
+                    prediction,
+                    int(result_translator(self.topic, result, self.translator)),
+                )
+
         return prediction
 
 
 if __name__ == "__main__":
-    
+
     predictor = OpinionPredict(
         task_type="regression",
-        strategy="generation",
-        model_base="llama-2-13b-chat",
-        # model_path="/scratch/network/dg2944/alpaca-lora/output/generation/llama-2-13b-chat/gun/regression",
+        strategy="sequence",
+        model_base="llama-3-8b",
+        # TODO model_path="/scratch/network/dg2944/alpaca-lora/output/generation/llama-2-13b-chat/gun/regression",
         topic="gun",
     )
 

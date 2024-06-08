@@ -89,4 +89,13 @@ trainin_args = {
         "eval_steps": 10,
         "save_steps": 40,
     },
+    "sequence-llama-3-8b-regression": {
+        "batch_size": 16,
+        "micro_batch_size": 16,
+        "num_epochs": 12,
+        "learning_rate": 0.05,
+        "cutoff_len": 256,
+        "weight_decay": 0.3,
+        "warmup_steps": 0,
+    },
 }

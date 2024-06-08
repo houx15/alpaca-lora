@@ -109,12 +109,10 @@ def hp_space_optuna(trial):
             "warmup_steps", [20, 40, 50, 60, 100, 200]
         ),
         "learning_rate": trial.suggest_categorical(
-            "learning_rate", [5e-5, 1e-4, 2e-4, 3e-4, 5e-4, 1e-3]
+            "learning_rate", [3e-4, 1e-3, 3e-3, 5e-3, 1e-2, 3e-2]
         ),
-        "num_train_epochs": trial.suggest_int(
-            "num_train_epochs", 15, 25, log=True
-        ),
+        "num_train_epochs": trial.suggest_int("num_train_epochs", 5, 20, log=True),
         "per_device_train_batch_size": trial.suggest_categorical(
-            "per_device_train_batch_size", [16, 32, 64]
+            "per_device_train_batch_size", [16, 32]
         ),
     }
