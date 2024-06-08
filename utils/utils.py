@@ -32,7 +32,7 @@ def result_translator(topic, result_text, translator, task_type):
     if result_text in translator['labels'].keys():
         return translator['labels'][result_text]
     
-    if 'irrelevant' in result_text:
+    if 'irrelevant' in result_text or topic == "china" and "doesn't" in result_text:
         return -9
 
     if task_type == "binary":

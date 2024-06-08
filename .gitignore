@@ -20,5 +20,6 @@ todo.txt
 slurm-*
 logs/*
 PEFT/*
-slurm/*
+slurm
 *.slurm
+slurm_output

@@ -71,11 +71,11 @@ We can also tweak our strategies:
 python run.py \
     --topic 'abortion' #abortion / gun / china / sexual / climate / drug
     --do_train  #do_train or do_eval
-    --model_type 'llama-2-13b' #llama-2-7b or llama-2-13b
+    --model_type 'llama-2-13b' #llama-2-7b(-chat) or llama-2-13b(-chat)
     --task_type 'regression' #binary or regression
     --dataset_update #regenerate the dataset based on the source data
     --augmentation #perform data augmentation or not
-    --strategy #sequence: sequence classification; prompt: prompt tuning
+    --strategy #sequence: sequence classification; prompt: prompt tuning; generation: fine-tuning with prompts
     --peft #whether use the peft strategy or not
     --use_pretrained_peft_weights
     --eval_model_path './output' #the adapter weights for evaluation
@@ -112,7 +112,7 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 
 ## Performance
 
-### 1. Sequence Classification
+### 1. Sequence Classification (--sequence)
 
 | Topic | BERT-Binary | BERT-Regression | Llama2-13b-Binary | Llama2-13b-Regression | Alpaca-7b-Binary | Alpaca-7b-Regression | Alpaca-13b-Binary | Alpaca-13b-Regression |
 |---|---|---|---|---|---|---|---|---|
@@ -122,17 +122,17 @@ result = predictor.predict(texts=texts, batch=16) # a numpy-array (n*1) of float
 |Abortion|92%|0.98|95%|0.90|||96.71%|0.88|
 |Sexual orientation|92%|0.69|92%||||||
 
-### 2. Fine Tuning With Hard Prompt
+### 2. Fine Tuning With Hard Prompt (--generation)
 
 | Topic | Llama2-13b-chat-Binary | Llama2-13b-chat-Regression |
 | --- | --- | --- |
-| Gun Control | 92% | 0.745 |
+| Gun Control | 92% | 0.828 |
 | Climate Change | 100% | 0.54 |
-| China Favoribility | 81.4% | 0.706 |
+| China Favoribility | 85.5% | 0.706 |
 | Abortion | 97.4% | 0.612 |
-| Sexual Orientation | 96.4% | 0.724 |
+| Sexual Orientation | 96.4% | 0.802 |
 
-### 3. Prompt Tuning
+### 3. Prompt Tuning (--prompt)
 
 | Topic | Llama2-13b-chat-Regression |
 | --- | --- |
